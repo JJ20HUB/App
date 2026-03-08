@@ -1632,8 +1632,9 @@ const App = {
   // Build the correct webhook URL using the current page origin so it works
   // regardless of what PUBLIC_BASE_URL is set to in the server .env file.
   wUrl(w) {
+    if (w.webhookUrl) return w.webhookUrl;
     if (w.token) return `${window.location.origin}/webhook/${w.token}`;
-    return w.webhookUrl || '';
+    return '';
   },
 
   async loadWebhooks(silent=false) {
