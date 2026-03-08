@@ -419,8 +419,9 @@
           <!-- Broker switcher — only visible on Dashboard -->
           <div class="broker-toggle" id="dash-broker-toggle" style="display:none">
             <button id="dbt-all"       class="active" onclick="App.switchDashBroker('all')">All</button>
-            <button id="dbt-topstepx"            onclick="App.switchDashBroker('topstepx')">TopstepX</button>
-            <button id="dbt-lucid"               onclick="App.switchDashBroker('lucid')">Lucid</button>
+            <button id="dbt-topstepx" onclick="App.switchDashBroker('topstepx')">TopstepX</button>
+            <button id="dbt-lucid"    onclick="App.switchDashBroker('lucid')">Lucid</button>
+            <button id="dbt-bitunix"  onclick="App.switchDashBroker('bitunix')">Bitunix</button>
           </div>
           <button class="btn-outline btn-sm" onclick="App.nav('tradingview')" style="font-size:12px;border-color:rgba(0,212,192,.3);color:var(--accent)">⚡ Connect Alert</button>
         </div>
@@ -489,6 +490,7 @@
           <div class="guide"><h4>🔌 Connecting an Account</h4><ul>
             <li><strong>TopstepX:</strong> Log in at <a href="https://topstepx.com" target="_blank">topstepx.com</a> → Settings → API Keys → generate a key. Enter your username + API key here.</li>
             <li><strong>Lucid Markets:</strong> Obtain your API key &amp; secret from the Lucid portal. Enter your Account ID (e.g. ACC123456).</li>
+            <li><strong>Bitunix:</strong> Log in at <a href="https://www.bitunix.com" target="_blank">bitunix.com</a> → Account → API Management → create a key with trading permissions. Enter your API Key and Secret Key here.</li>
             <li>After connecting, click <strong>Test</strong> to verify credentials reach the broker live.</li>
           </ul></div>
         </div>
@@ -744,6 +746,7 @@
                   <option value="all">All Brokers</option>
                   <option value="topstepx">TopstepX</option>
                   <option value="lucid">Lucid Markets</option>
+                  <option value="bitunix">Bitunix</option>
                 </select>
               </div>
             </div>
@@ -946,6 +949,7 @@
           <option value="">— Select —</option>
           <option value="topstepx">TopstepX</option>
           <option value="lucid">Lucid Markets</option>
+          <option value="bitunix">Bitunix</option>
         </select>
       </div>
       <div class="form-group"><label>Account</label>
@@ -1016,6 +1020,7 @@
           <option value="">— Select Broker —</option>
           <option value="topstepx">TopstepX</option>
           <option value="lucid">Lucid Markets</option>
+          <option value="bitunix">Bitunix</option>
         </select>
       </div>
       <div id="am-topstepx" class="broker-sect">
@@ -1029,6 +1034,11 @@
         <div class="form-group"><label>Username</label><input type="text" id="am-lm-user" placeholder="your_lucid_username" autocomplete="off" /></div>
         <div class="form-group"><label>API Key</label><input type="text" id="am-lm-key" placeholder="lm_key_xxxxx" autocomplete="off" /></div>
         <div class="form-group"><label>API Secret</label><input type="password" id="am-lm-secret" placeholder="lm_secret_xxxxx" autocomplete="off" /></div>
+      </div>
+      <div id="am-bitunix" class="broker-sect">
+        <div class="sect-div"></div><div class="sect-lbl">Bitunix Credentials</div>
+        <div class="form-group"><label>API Key</label><input type="text" id="am-bu-key" placeholder="your_bitunix_api_key" autocomplete="off" /></div>
+        <div class="form-group"><label>Secret Key</label><input type="password" id="am-bu-secret" placeholder="your_bitunix_secret_key" autocomplete="off" /></div>
       </div>
       <div class="modal-foot">
         <button class="btn-outline" onclick="App.closeAcctModal()">Cancel</button>
@@ -1268,6 +1278,16 @@ const brokerBadge = b => { const m={topstepx:'bg-blue',lucid:'bg-purple'}; retur
 const slFmt = t => t.sl ? `<span class="c-red">${fmtPrice(t.sl)}</span>` : t.slTicks ? `<span class="c-red">${t.slTicks}t</span>` : '—';
 const tpFmt = t => t.tp ? `<span class="c-green">${fmtPrice(t.tp)}</span>` : t.tpTicks ? `<span class="c-green">${t.tpTicks}t</span>` : '—';
 
+function safeCopy(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).catch(()=>{
+      try{const el=document.createElement('textarea');el.value=text;el.style.position='fixed';el.style.opacity='0';document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);}catch(e){}
+    });
+  }else{
+    try{const el=document.createElement('textarea');el.value=text;el.style.position='fixed';el.style.opacity='0';document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);}catch(e){}
+  }
+}
+
 const App = {
   user:null, webhooks:[], accounts:[], orders:[], trades:[], indicators:[],
 
@@ -1357,7 +1377,7 @@ const App = {
 
   switchDashBroker(b) {
     this.dashBroker = b;
-    ['all','topstepx','lucid'].forEach(id => {
+    ['all','topstepx','lucid','bitunix'].forEach(id => {
       const el = document.getElementById(`dbt-${id}`);
       if (el) el.classList.toggle('active', id === b);
     });
@@ -1489,7 +1509,7 @@ const App = {
   _amFetchedSim: false,
   openAcctModal() {
     document.getElementById('acct-err').style.display='none';
-    ['am-ts-user','am-ts-key','am-lm-user','am-lm-key','am-lm-secret'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['am-ts-user','am-ts-key','am-lm-user','am-lm-key','am-lm-secret','am-bu-key','am-bu-secret'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); 
     document.getElementById('am-ts-sim').checked=false;
     document.getElementById('am-broker').value='';
     this._amFetchedAccounts=[];
@@ -1498,7 +1518,7 @@ const App = {
     document.getElementById('acct-modal').classList.remove('hidden');
   },
   closeAcctModal(){document.getElementById('acct-modal').classList.add('hidden');},
-  acctBrokerChange(){const b=document.getElementById('am-broker').value;document.getElementById('am-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('am-lucid').classList.toggle('show',b==='lucid');},
+  acctBrokerChange(){const b=document.getElementById('am-broker').value;document.getElementById('am-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('am-lucid').classList.toggle('show',b==='lucid');document.getElementById('am-bitunix').classList.toggle('show',b==='bitunix');},
   _amShow(step){
     document.getElementById('am-step1').style.display=step===1?'':'none';
     document.getElementById('am-step2').style.display=step===2?'':'none';
@@ -1520,6 +1540,11 @@ const App = {
       payload.apiKey=document.getElementById('am-ts-key').value.trim();
       payload.sim=document.getElementById('am-ts-sim').checked;
       if(!userName||!payload.apiKey){errEl.textContent='Enter your username and API key.';errEl.style.display='block';return;}
+    } else if(broker==='bitunix'){
+      payload.apiKey=document.getElementById('am-bu-key').value.trim();
+      payload.secretKey=document.getElementById('am-bu-secret').value.trim();
+      userName='bitunix';
+      if(!payload.apiKey||!payload.secretKey){errEl.textContent='Enter your API key and secret key.';errEl.style.display='block';return;}
     } else {
       userName=document.getElementById('am-lm-user').value.trim();
       payload.userName=userName;
@@ -1542,7 +1567,7 @@ const App = {
       sel.innerHTML='<option value="">— Choose an account —</option>'+
         accounts.map(a=>`<option value="${a.id}">${a.name||a.id}${a.balance!=null?' — Balance: $'+Number(a.balance).toFixed(2):''}</option>`).join('');
       // Fill broker/user labels
-      document.getElementById('am-s2-broker').textContent=broker==='topstepx'?'TopstepX':'Lucid Markets';
+      document.getElementById('am-s2-broker').textContent=broker==='topstepx'?'TopstepX':broker==='bitunix'?'Bitunix':'Lucid Markets';
       document.getElementById('am-s2-user').textContent=userName;
       // Set up detail panel on selection change
       sel.onchange=()=>{
@@ -1730,7 +1755,7 @@ const App = {
         const res=await API.post('/webhooks',{label,linkedAccountId});
         const url=this.wUrl(res.webhook);
         toast('Webhook created! URL copied to clipboard.','success');
-        if(url)navigator.clipboard.writeText(url).catch(()=>{});
+        if(url)safeCopy(url);
       }
       this.closeWHModal();await this.loadWebhooks();this.renderWebhooks();
     }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
@@ -1880,7 +1905,7 @@ const App = {
     try{
       const res=await API.post('/webhooks',{label,linkedAccountId});
       const url=this.wUrl(res.webhook);
-      if(url)navigator.clipboard.writeText(url).catch(()=>{});
+      if(url)safeCopy(url);
       this.closeIndicatorUseModal();
       // Show step-by-step guide in Webhooks tab with this webhook pre-selected
       await this.loadWebhooks();
@@ -1893,7 +1918,7 @@ const App = {
     }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
     finally{btn.disabled=false;btn.textContent='Create Webhook';}
   },
-  tvBrokerChange(){const b=document.getElementById('tv-broker').value;document.getElementById('tv-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('tv-lucid').classList.toggle('show',b==='lucid');},
+  tvBrokerChange(){const b=document.getElementById('tv-broker').value;document.getElementById('tv-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('tv-lucid').classList.toggle('show',b==='lucid');document.getElementById('tv-bitunix').classList.toggle('show',b==='bitunix');document.getElementById('tv-broker-hint').textContent=b==='bitunix'?'Bitunix symbol format: BTCUSDT, ETHUSDT, etc.':b==='topstepx'?'TopstepX contract IDs look like CON.F.US.ENQ.U25':'';  },
   async tvCreateWebhook() {
     const errEl=document.getElementById('tv-create-err');errEl.style.display='none';
     const label=document.getElementById('tv-label').value.trim();
@@ -1906,6 +1931,9 @@ const App = {
       bc.apiKey=document.getElementById('tv-ts-key').value.trim();
       const a=document.getElementById('tv-ts-acct').value;if(a)bc.accountId=parseInt(a,10);
       bc.sim=document.getElementById('tv-ts-sim').checked;
+    } else if(broker==='bitunix'){
+      bc.apiKey=document.getElementById('tv-bu-key').value.trim();
+      bc.secretKey=document.getElementById('tv-bu-secret').value.trim();
     } else {
       bc.apiKey=document.getElementById('tv-lm-key').value.trim();
       bc.apiSecret=document.getElementById('tv-lm-secret').value;
@@ -1918,7 +1946,7 @@ const App = {
       document.getElementById('tv-url-text').textContent=url;
       document.getElementById('tv-json-preview').textContent=`{\n  "action":    "{{strategy.order.action}}",\n  "ticker":    "{{ticker}}",\n  "qty":       {{strategy.order.contracts}},\n  "price":     {{close}},\n  "orderType": "market",\n  "sl":        null,\n  "tp":        null,\n  "slTicks":   10,\n  "tpTicks":   20,\n  "signal":    "{{strategy.order.comment}}",\n  "comment":   "${label}"\n}`;
       document.getElementById('tv-result').style.display='block';
-      navigator.clipboard.writeText(url).catch(()=>{});
+      safeCopy(url);
       toast('Webhook created! URL copied to clipboard.','success');
       await this.loadWebhooks(true);
     }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
@@ -1926,7 +1954,7 @@ const App = {
   },
   copyTemplateJson(){
     const t=`{\n  "action":    "{{strategy.order.action}}",\n  "ticker":    "{{ticker}}",\n  "qty":       {{strategy.order.contracts}},\n  "price":     {{close}},\n  "orderType": "market",\n  "sl":        null,\n  "tp":        null,\n  "slTicks":   10,\n  "tpTicks":   20,\n  "signal":    "{{strategy.order.comment}}",\n  "comment":   "my_strategy"\n}`;
-    navigator.clipboard.writeText(t).then(()=>toast('Template copied!','success')).catch(()=>toast('Copy failed','error'));
+    safeCopy(t);toast('Template copied!','success');
   },
 
   // ── Trade Settings ──────────────────────────────────────────────────────────
@@ -2370,7 +2398,7 @@ const App = {
 
   async copyText(text,btn) {
     try{
-      await navigator.clipboard.writeText(text);
+      safeCopy(text);
       if(btn){const orig=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=orig,2000);}
       toast('Copied!','success');
     }catch{toast('Copy failed','error');}
