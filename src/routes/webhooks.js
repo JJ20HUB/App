@@ -82,6 +82,7 @@ router.post('/webhook/:token', webhookLimiter, async (req, res) => {
         userName:   account.userName,
         username:   account.userName,
         apiKey:     account.apiKey,
+        secretKey:  account.secretKey,
         password:   account.password,
         appId:      account.appId,
         appVersion: account.appVersion,
@@ -169,8 +170,7 @@ router.post('/webhooks', (req, res) => {
       linkedAccountId || null
     );
 
-    const reqBase = `${req.protocol}://${req.get('host')}`;
-    const webhookUrl = webhookService.buildWebhookUrl(webhook.token, reqBase);
+    const webhookUrl = webhookService.buildWebhookUrl(webhook.token, config.publicBaseUrl);
 
     logger.info(`[webhooks] Created webhook "${label}" for user ${req.user.username}`);
 
@@ -211,7 +211,6 @@ router.post('/webhooks', (req, res) => {
 router.get('/webhooks', (req, res) => {
   try {
     const webhooks = webhookService.getUserWebhooks(req.user.id);
-    const reqBase = `${req.protocol}://${req.get('host')}`;
     const safe = webhooks.map((w) => ({
       id: w.id,
       token: w.token,
@@ -221,7 +220,7 @@ router.get('/webhooks', (req, res) => {
       createdAt: w.createdAt,
       lastTriggered: w.lastTriggered,
       linkedAccountId: w.linkedAccountId || null,
-      webhookUrl: webhookService.buildWebhookUrl(w.token, reqBase),
+      webhookUrl: webhookService.buildWebhookUrl(w.token, config.publicBaseUrl),
       // Only expose whether credentials are configured, not the actual values
       credentialsConfigured: !!(w.linkedAccountId || Object.keys(w.brokerConfig || {}).length > 0),
     }));
