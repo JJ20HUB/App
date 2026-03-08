@@ -1,0 +1,2407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apex Trading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#040d0f;--bg2:#071418;--bg3:#0c1e23;--bg4:#0f252b00;
+      --border:#0f2d35;--border2:#164048;
+      --text:#d0eaed;--muted:#3d6570;
+      --accent:#00d4c0;--accent-h:#00b8a6;--accent-glow:rgba(0,212,192,.18);
+      --green:#00d4c0;--red:#e84118;--yellow:#f0b429;--purple:#7c6ff5;--orange:#f56b1e;--cyan:#00e5ff;
+      --radius:8px;--sidebar:230px;
+    }
+    html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+    a{color:var(--accent);text-decoration:none}
+    input,select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--radius);padding:8px 12px;width:100%;font-size:14px;transition:border-color .2s}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+    input[type=checkbox]{width:auto;accent-color:var(--accent)}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+    button{cursor:pointer;border:none;border-radius:var(--radius);padding:8px 16px;font-size:14px;font-weight:500;transition:background .18s,opacity .2s,transform .14s,box-shadow .18s;position:relative;overflow:hidden}
+    button:not(:disabled):active{transform:scale(.96)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    button::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--rx,50%) var(--ry,50%),rgba(255,255,255,.18) 0%,transparent 70%);opacity:0;transition:opacity .3s}
+    button:not(:disabled):hover::after{opacity:1}
+    code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px}
+    select option{background:var(--bg3)}
+
+    /* Auth */
+    #auth-page{display:flex;align-items:center;justify-content:center;min-height:100vh;
+      background:radial-gradient(ellipse 80% 60% at 20% 80%, rgba(232,65,24,.13) 0%, transparent 60%),
+                 radial-gradient(ellipse 80% 60% at 80% 20%, rgba(0,212,192,.13) 0%, transparent 60%),
+                 var(--bg);}
+    .auth-card{background:linear-gradient(145deg,rgba(7,20,24,.98),rgba(4,13,15,.98));border:1px solid var(--border2);border-radius:16px;padding:40px;width:100%;max-width:420px;box-shadow:0 0 60px rgba(0,212,192,.06),0 0 60px rgba(232,65,24,.04)}
+    .auth-logo{text-align:center;margin-bottom:28px}
+    .auth-logo h1{font-size:22px;font-weight:700}
+    .auth-logo p{color:var(--muted);font-size:13px;margin-top:4px}
+    .auth-tabs{display:flex;margin-bottom:28px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+    .auth-tab{flex:1;background:transparent;color:var(--muted);padding:10px;text-align:center;transition:all .2s}
+    .auth-tab.active{background:var(--accent);color:#0a0c12}
+    .form-group{margin-bottom:16px}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-h));color:#020e0d;font-weight:700;width:100%;padding:10px;font-size:15px}
+    .btn-primary:hover:not(:disabled){background:linear-gradient(135deg,var(--accent-h),#009e91)}
+    .err-box{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:var(--red);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;font-size:13px;display:none}
+
+    /* Shell */
+    #app{display:none;height:100vh;overflow:hidden}
+    .shell{display:flex;height:100%}
+
+    /* Sidebar */
+    .sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+    .sb-head{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+    .sb-head h2{font-size:15px;font-weight:700}
+    .sb-head p{font-size:11px;color:var(--muted);margin-top:2px}
+    .sb-nav{flex:1;padding:12px 0;overflow-y:auto}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:var(--muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+    .nav-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+    .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,192,.07)}
+    .nav-icon{font-size:17px;width:20px;text-align:center}
+    .nav-label{font-size:13px;font-weight:500}
+    .sb-foot{padding:14px 18px;border-top:1px solid var(--border)}
+    .user-info{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+    .uname{font-size:13px;font-weight:600}
+    .uemail{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+    .btn-logout{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px}
+    .btn-logout:hover{border-color:var(--red);color:var(--red)}
+
+    /* Main */
+    .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    .topbar{padding:0 24px;height:56px;display:flex;align-items:center;border-bottom:1px solid var(--border);background:var(--bg2);justify-content:space-between;flex-shrink:0}
+    .topbar-title{font-size:16px;font-weight:600}
+    .content{flex:1;overflow-y:auto;padding:24px}
+
+    /* Sections */
+    .section{display:none}
+    .section.active{display:block}
+
+    /* ── Dashboard stat cards ── */
+    .dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+    .dcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px 24px;position:relative;overflow:hidden;
+      transition:transform .2s,border-color .2s,box-shadow .2s;
+      animation:card-in .4s ease both}
+    .dcard:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+    .dcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:12px 12px 0 0;background:var(--dc-color,var(--border));opacity:.7;transition:opacity .2s}
+    .dcard:hover::before{opacity:1}
+    .dcard-icon{font-size:28px;margin-bottom:12px;display:block;filter:drop-shadow(0 0 8px var(--dc-color,transparent))}
+    .dcard-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+    .dcard-val{font-size:38px;font-weight:800;line-height:1;letter-spacing:-1px;color:var(--dc-color,var(--text));
+      transition:color .3s;
+      text-shadow:0 0 24px color-mix(in srgb,var(--dc-color,transparent) 30%,transparent)}
+    .dcard-sub{font-size:12px;color:var(--muted);margin-top:8px}
+    /* glow variants */
+    .dcard.glow-green{--dc-color:var(--green)}.dcard.glow-green:hover{border-color:rgba(0,212,192,.3);box-shadow:0 8px 32px rgba(0,212,192,.1)}
+    .dcard.glow-cyan{--dc-color:var(--cyan)}.dcard.glow-cyan:hover{border-color:rgba(0,229,255,.3);box-shadow:0 8px 32px rgba(0,229,255,.08)}
+    .dcard.glow-gold{--dc-color:var(--yellow)}.dcard.glow-gold:hover{border-color:rgba(240,180,41,.3);box-shadow:0 8px 32px rgba(240,180,41,.08)}
+    .dcard.glow-purple{--dc-color:var(--purple)}.dcard.glow-purple:hover{border-color:rgba(124,111,245,.3);box-shadow:0 8px 32px rgba(124,111,245,.08)}
+    .dcard.glow-red{--dc-color:var(--red)}.dcard.glow-red:hover{border-color:rgba(232,65,24,.3);box-shadow:0 8px 32px rgba(232,65,24,.1)}
+    /* stagger entrance */
+    .dcard:nth-child(1){animation-delay:.04s}
+    .dcard:nth-child(2){animation-delay:.1s}
+    .dcard:nth-child(3){animation-delay:.16s}
+    @keyframes card-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    /* section fade-in */
+    .section.active{animation:sec-in .3s ease}
+    @keyframes sec-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    /* System row (webhooks/accounts/orders) */
+    .sys-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+    .sys-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;
+      transition:border-color .2s,transform .2s;animation:card-in .4s ease both}
+    .sys-card:hover{transform:translateY(-2px)}
+    .sys-card:nth-child(1){animation-delay:.22s}.sys-card:nth-child(2){animation-delay:.28s}.sys-card:nth-child(3){animation-delay:.34s}
+    .sys-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;transition:transform .2s}
+    .sys-card:hover .sys-icon{transform:scale(1.12)}
+    .sys-icon.gold{background:rgba(240,180,41,.12)}.sys-icon.cyan{background:rgba(0,229,255,.1)}.sys-icon.purple{background:rgba(124,111,245,.12)}
+    .sys-val{font-size:18px;font-weight:700}.sys-label{font-size:11px;color:var(--muted);margin-top:2px}
+    /* compat */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px;border-top:2px solid var(--border2)}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .stat-val{font-size:28px;font-weight:700;margin-top:6px}
+    .stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .c-green{color:var(--green)}.c-red{color:var(--red)}.c-blue{color:var(--cyan)}.c-purple{color:var(--purple)}.c-yellow{color:var(--yellow)}.c-orange{color:var(--orange)}.c-gold{color:var(--accent)}
+
+    /* Card */
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+    .card:hover{border-color:var(--border2)}
+    .card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border)}
+    .card-title{font-size:14px;font-weight:600}
+    .card-body{padding:20px}
+
+    /* Table */
+    .tbl-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+    td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tbody tr:hover{background:rgba(255,255,255,.02)}
+    .empty-row td{text-align:center;color:var(--muted);padding:40px}
+
+    /* Badge */
+    .badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;gap:3px}
+    .bg-green{background:rgba(0,212,192,.12);color:var(--green)}
+    .bg-red{background:rgba(232,65,24,.12);color:var(--red)}
+    .bg-yellow{background:rgba(240,180,41,.15);color:var(--yellow)}
+    .bg-blue{background:rgba(0,229,255,.1);color:var(--cyan)}
+    .bg-purple{background:rgba(124,111,245,.15);color:var(--purple)}
+    .bg-orange{background:rgba(245,107,30,.15);color:var(--orange)}
+
+    /* Buttons */
+    .btn-sm{padding:5px 12px;font-size:12px}
+    .btn-xs{padding:3px 8px;font-size:11px}
+    .btn-icon{padding:4px 8px;font-size:14px;background:transparent;border:1px solid var(--border);color:var(--muted);transition:border-color .15s,color .15s,transform .14s,box-shadow .15s}
+    .btn-icon:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.1)}
+    .btn-danger{background:rgba(255,51,88,.12);color:var(--red);border:1px solid rgba(255,51,88,.3)}
+    .btn-danger:hover{background:rgba(255,51,88,.22);box-shadow:0 0 12px rgba(255,51,88,.2)}
+    .btn-success{background:var(--green);color:#0a0c12;font-weight:700}
+    .btn-success:hover{box-shadow:0 0 16px rgba(0,201,122,.3)}
+    .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);transition:border-color .15s,color .15s,box-shadow .15s}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 10px rgba(0,212,192,.12)}
+    .btn-primary:not(:disabled):hover{box-shadow:0 0 18px rgba(0,212,192,.35)}
+    .btn-row{display:flex;gap:6px;align-items:center}
+
+    /* URL box */
+    .url-box{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 12px}
+    .url-text{flex:1;font-family:monospace;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .btn-copy{padding:2px 8px;font-size:11px;background:var(--bg);border:1px solid var(--border);color:var(--muted);flex-shrink:0}
+    .btn-copy:hover{color:var(--accent);border-color:var(--accent)}
+
+    /* Modal */
+    .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+    .modal-ov.hidden{display:none}
+    .modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+    .modal h3{font-size:16px;font-weight:700;margin-bottom:20px}
+    .modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+    .modal-foot button{min-width:90px}
+    .sect-div{border-top:1px solid var(--border);margin:18px 0}
+    .sect-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+    .broker-sect{display:none}
+    .broker-sect.show{display:block}
+    .check-row{display:flex;align-items:center;gap:8px}
+    .check-row label{margin-bottom:0;font-size:13px;color:var(--text)}
+
+    /* Confirm */
+    #confirm-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:2000}
+    #confirm-ov.hidden{display:none}
+    .confirm-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;max-width:360px;width:100%}
+    .confirm-box h4{font-size:15px;margin-bottom:8px}
+    .confirm-box p{color:var(--muted);font-size:13px;margin-bottom:20px}
+    .confirm-btns{display:flex;gap:10px;justify-content:flex-end}
+
+    /* Toast */
+    #toast-ct{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;min-width:240px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:slide-in .2s ease}
+    .toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--accent)}
+    @keyframes slide-in{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+    /* Spinner */
+    .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Page tabs */
+    .page-tabs{display:flex;gap:2px;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content}
+    .page-tab{padding:6px 16px;border-radius:calc(var(--radius) - 2px);font-size:13px;font-weight:500;color:var(--muted);background:transparent}
+    .page-tab.active{background:var(--accent);color:#0a0c12;font-weight:700}
+    .page-tab:hover:not(.active){background:var(--bg3);color:var(--text)}
+    .tab-panel{display:none}.tab-panel.active{display:block}
+
+    /* Guide */
+    .guide{background:rgba(0,212,192,.04);border:1px solid rgba(0,212,192,.15);border-radius:var(--radius);padding:16px 20px;margin-top:16px}
+    .guide h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px}
+    .guide ol,.guide ul{padding-left:18px}
+    .guide li{font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.6}
+
+    /* JSON preview */
+    .json-preview{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-family:monospace;font-size:12px;color:#a3e635;white-space:pre;overflow-x:auto}
+
+    /* PnL */
+    .pnl-pos{color:var(--green);font-weight:600}.pnl-neg{color:var(--red);font-weight:600}.pnl-zero{color:var(--muted)}
+
+    /* Info grid */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .info-field .val{font-size:13px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius)}
+
+    /* Active trades live dot */
+    @keyframes live-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,51,88,.6)}70%{box-shadow:0 0 0 6px rgba(255,51,88,0)}}
+    .live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);animation:live-pulse 1.6s ease infinite;flex-shrink:0}
+    .at-row-open .live-dot{background:var(--green);animation-name:live-pulse-g}
+    @keyframes live-pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(0,201,122,.6)}70%{box-shadow:0 0 0 6px rgba(0,201,122,0)}}
+    /* active trade row highlight */
+    .at-row-open td{border-bottom:1px solid rgba(0,201,122,.08)}
+    .at-empty{text-align:center;padding:60px 20px}
+    .at-empty .at-empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}
+    .at-empty .at-empty-title{font-size:15px;font-weight:600;color:var(--muted)}
+    .at-empty .at-empty-sub{font-size:12px;color:var(--muted);margin-top:6px}
+    /* Sidebar active glow */
+    .sb-head{background:linear-gradient(135deg,rgba(0,212,192,.07) 0%,rgba(232,65,24,.04) 60%,transparent 100%)}
+    .nav-item{transition:all .15s,background .12s}
+    /* health badge pulse */
+    @keyframes dot-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .health-dot{display:inline-block;animation:dot-pulse 2.4s ease infinite}
+    /* Topbar shimmer line */
+    .topbar{border-bottom:1px solid var(--border);box-shadow:0 1px 0 rgba(0,212,192,.06)}
+    /* Table rows */
+    thead tr{background:rgba(255,255,255,.015)}
+    tbody tr{transition:background .12s}
+    tbody tr:hover{background:rgba(0,212,192,.04) !important}
+    /* Toast pop */
+    .toast{animation:toast-in .22s cubic-bezier(.34,1.5,.64,1)}
+    @keyframes toast-in{from{transform:translateX(120%);opacity:0}to{transform:none;opacity:1}}
+    /* Input focus glow */
+    input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(0,212,192,.12)}
+    .btn-discord{background:#5865F2;color:#fff;font-weight:700;width:100%;padding:10px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;border-radius:var(--radius)}
+    .btn-discord:hover{background:#4752C4;box-shadow:0 0 18px rgba(88,101,242,.4)}
+    .auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:var(--muted);font-size:12px}
+    .auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+    /* Broker toggle */
+    .broker-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:3px;gap:2px}
+    .broker-toggle button{padding:4px 12px;font-size:12px;font-weight:600;background:transparent;color:var(--muted);border-radius:calc(var(--radius) - 2px);transition:all .15s}
+    .broker-toggle button.active{background:var(--accent);color:#021110;box-shadow:0 0 10px rgba(0,212,192,.35)}
+    .broker-toggle button:not(.active):hover{color:var(--text);background:rgba(255,255,255,.04)}
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+    @media(max-width:800px){.dash-grid{grid-template-columns:1fr 1fr}.sys-row{grid-template-columns:1fr 1fr}}
+    @media(max-width:640px){.sidebar{display:none}.dash-grid{grid-template-columns:1fr}.sys-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 12px;display:block;width:64px;height:64px">
+        <defs>
+          <linearGradient id="lgBg" x1="0" y1="64" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#1a0600"/>
+            <stop offset="45%" stop-color="#040d0f"/>
+            <stop offset="100%" stop-color="#001a1e"/>
+          </linearGradient>
+          <linearGradient id="lgSplit" x1="0" y1="0" x2="64" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#e84118" stop-opacity="0.7"/>
+            <stop offset="48%" stop-color="#ffffff" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#00d4c0" stop-opacity="0.7"/>
+          </linearGradient>
+          <filter id="lglow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <rect width="64" height="64" rx="16" fill="url(#lgBg)"/>
+        <ellipse cx="14" cy="50" rx="24" ry="18" fill="#e84118" opacity="0.14"/>
+        <ellipse cx="50" cy="14" rx="24" ry="18" fill="00d4c0" opacity="0.14"/>
+        <rect width="64" height="64" rx="16" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <!-- Bear claws -->
+        <g filter="url(#lglow)">
+          <line x1="7" y1="20" x2="22" y2="44" stroke="#e84118" stroke-width="2.8" stroke-linecap="round"/>
+          <line x1="12" y1="17" x2="27" y2="41" stroke="#e84118" stroke-width="2" stroke-linecap="round" opacity="0.65"/>
+          <line x1="17" y1="15" x2="30" y2="37" stroke="#e84118" stroke-width="1.3" stroke-linecap="round" opacity="0.35"/>
+        </g>
+        <!-- Bull horns -->
+        <g filter="url(#lglow)">
+          <path d="M34 40 Q37 26 44 18 Q47 13 50 11" stroke="#00d4c0" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+          <path d="M40 42 Q49 32 56 20 Q58 14 57 11" stroke="#00d4c0" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.65"/>
+          <path d="M32 46 Q36 42 40 44 Q44 46 47 42" stroke="#00d4c0" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.5"/>
+        </g>
+        <!-- Centre candlestick divider -->
+        <g filter="url(#lglow)">
+          <line x1="32" y1="8" x2="32" y2="56" stroke="url(#lgSplit)" stroke-width="1.5" opacity="0.7"/>
+          <rect x="29" y="23" width="6" height="18" rx="1.5" fill="#00d4c0" opacity="0.85"/>
+          <line x1="32" y1="12" x2="32" y2="23" stroke="#00d4c0" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="32" y1="41" x2="32" y2="51" stroke="#00d4c0" stroke-width="1.8" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <h1 style="font-size:20px;font-weight:800;letter-spacing:-.3px">APEX <span style="color:var(--accent)">TRADING</span></h1>
+      <p style="color:var(--muted);font-size:12px;margin-top:4px">Automated Order Routing Platform</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="App.authTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-reg" onclick="App.authTab('reg')">Register</button>
+    </div>
+    <div id="auth-err" class="err-box"></div>
+    <form id="login-form" onsubmit="App.login(event)">
+      <div class="form-group"><label>Email</label><input type="email" id="l-email" placeholder="you@example.com" required /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" required /></div>
+      <button type="submit" class="btn-primary" id="l-btn">Sign In</button>
+      <div class="auth-divider">or</div>
+      <a href="/auth/discord" class="btn-discord">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.036.056a19.888 19.888 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Sign in with Discord
+      </a>
+    </form>
+    <form id="reg-form" style="display:none" onsubmit="App.register(event)">
+      <div class="form-group"><label>Username</label><input type="text" id="r-user" placeholder="trader_john" required /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="r-email" placeholder="you@example.com" required /></div>
+      <div class="form-group"><label>Password (min 8 chars)</label><input type="password" id="r-pass" placeholder="••••••••" required minlength="8" /></div>
+      <button type="submit" class="btn-primary" id="r-btn">Create Account</button>
+      <div class="auth-divider">or</div>
+      <a href="/auth/discord" class="btn-discord">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.036.056a19.888 19.888 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Sign up with Discord
+      </a>
+    </form>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+  <div class="shell">
+    <nav class="sidebar">
+      <div class="sb-head">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="sbBg" x1="0" y1="32" x2="32" y2="0">
+                <stop offset="0%" stop-color="#180600"/>
+                <stop offset="100%" stop-color="#001214"/>
+              </linearGradient>
+              <filter id="sbglow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.5" result="b"/>
+                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <rect width="32" height="32" rx="9" fill="url(#sbBg)"/>
+            <ellipse cx="8" cy="24" rx="12" ry="10" fill="#e84118" opacity="0.18"/>
+            <ellipse cx="24" cy="8" rx="12" ry="10" fill="#00d4c0" opacity="0.18"/>
+            <rect width="32" height="32" rx="9" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+            <g filter="url(#sbglow)">
+              <line x1="4" y1="10" x2="12" y2="23" stroke="#e84118" stroke-width="2" stroke-linecap="round"/>
+              <line x1="7" y1="9" x2="14" y2="22" stroke="#e84118" stroke-width="1.3" stroke-linecap="round" opacity="0.5"/>
+            </g>
+            <g filter="url(#sbglow)">
+              <path d="M17 21 Q20 13 24 9" stroke="#00d4c0" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M21 22 Q27 15 29 9" stroke="#00d4c0" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
+            </g>
+            <line x1="16" y1="4" x2="16" y2="28" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+            <rect x="14" y="12" width="4" height="8" rx="1" fill="#00d4c0" opacity="0.9"/>
+            <line x1="16" y1="6" x2="16" y2="12" stroke="#00d4c0" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="16" y1="20" x2="16" y2="26" stroke="#00d4c0" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <div style="font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--text)">APEX <span style="color:var(--accent)">TRADING</span></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.3px">ORDER ROUTING</div>
+          </div>
+        </div>
+      </div>
+      <div class="sb-nav">
+        <div class="nav-item active" data-s="dashboard"   onclick="App.nav('dashboard')">  <span class="nav-icon">⊞</span><span class="nav-label">Dashboard</span></div>
+        <div class="nav-item"        data-s="accounts"    onclick="App.nav('accounts')">   <span class="nav-icon">🔌</span><span class="nav-label">Accounts</span></div>
+        <div class="nav-item"        data-s="webhooks"    onclick="App.nav('webhooks')">   <span class="nav-icon">🔗</span><span class="nav-label">Webhooks</span></div>
+        <div class="nav-item"        data-s="indicators"  onclick="App.nav('indicators')"> <span class="nav-icon">📊</span><span class="nav-label">Indicators</span></div>
+        <div class="nav-item"        data-s="tradingview" onclick="App.nav('tradingview')"><span class="nav-icon">⚙️</span><span class="nav-label">Trade Settings</span></div>
+        <div class="nav-item"        data-s="active-trades" onclick="App.nav('active-trades')"><span class="nav-icon">🔴</span><span class="nav-label">Active Trades<span id="at-count" style="margin-left:6px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;display:none">0</span></span></div>
+        <div class="nav-item"        data-s="tradelog"    onclick="App.nav('tradelog')">   <span class="nav-icon">📒</span><span class="nav-label">Trade Log</span></div>
+        <div class="nav-item"        data-s="orders"      onclick="App.nav('orders')">     <span class="nav-icon">📋</span><span class="nav-label">Order History</span></div>
+        <div class="nav-item"        data-s="profile"     onclick="App.nav('profile')">    <span class="nav-icon">👤</span><span class="nav-label">Profile</span></div>
+        <div class="nav-item"        data-s="orderflow"   onclick="App.nav('orderflow')"> <span class="nav-icon">🤖</span><span class="nav-label">Order Flow AI</span></div>
+      </div>
+      <div class="sb-foot">
+        <div class="user-info">
+          <div class="avatar" id="sb-avatar" style="background:linear-gradient(135deg,var(--accent),var(--orange))">?</div>
+          <div><div class="uname" id="sb-uname">—</div><div class="uemail" id="sb-email">—</div></div>
+        </div>
+        <button class="btn-logout" onclick="App.logout()">Sign Out</button>
+      </div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+          <span id="health-badge" style="font-size:11px;color:var(--muted)"><span class="health-dot">●</span> Checking…</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <!-- Broker switcher — only visible on Dashboard -->
+          <div class="broker-toggle" id="dash-broker-toggle" style="display:none">
+            <button id="dbt-all"       class="active" onclick="App.switchDashBroker('all')">All</button>
+            <button id="dbt-topstepx"            onclick="App.switchDashBroker('topstepx')">TopstepX</button>
+            <button id="dbt-lucid"               onclick="App.switchDashBroker('lucid')">Lucid</button>
+          </div>
+          <button class="btn-outline btn-sm" onclick="App.nav('tradingview')" style="font-size:12px;border-color:rgba(0,212,192,.3);color:var(--accent)">⚡ Connect Alert</button>
+        </div>
+      </div>
+      <div class="content">
+
+        <!-- DASHBOARD -->
+        <div class="section active" id="section-dashboard">
+
+          <!-- Performance cards -->
+          <div class="dash-grid">
+            <div class="dcard glow-green" id="d-pnl-card">
+              <span class="dcard-icon">💰</span>
+              <div class="dcard-label">Daily P&amp;L</div>
+              <div class="dcard-val" id="d-pnl">$0.00</div>
+              <div class="dcard-sub" id="d-pnl-date">Realized today · <span id="d-pnl-now">—</span></div>
+            </div>
+            <div class="dcard glow-cyan" id="d-wr-card">
+              <span class="dcard-icon">🎯</span>
+              <div class="dcard-label">Win Rate</div>
+              <div class="dcard-val" id="d-wr">0%</div>
+              <div class="dcard-sub">Today's closed trades</div>
+            </div>
+            <div class="dcard glow-gold" id="d-trades-card">
+              <span class="dcard-icon">📊</span>
+              <div class="dcard-label">Trades Today</div>
+              <div class="dcard-val" id="d-trades">0</div>
+              <div class="dcard-sub" id="d-wl">0 wins · 0 losses</div>
+            </div>
+          </div>
+
+          <!-- System row -->
+          <div class="sys-row">
+            <div class="sys-card">
+              <div class="sys-icon gold">⚡</div>
+              <div><div class="sys-val c-gold" id="d-wh">—</div><div class="sys-label">Active Webhooks</div></div>
+            </div>
+            <div class="sys-card">
+              <div class="sys-icon cyan">🔌</div>
+              <div><div class="sys-val" style="color:var(--cyan)" id="d-accts">—</div><div class="sys-label">Connected Accounts</div></div>
+            </div>
+            <div class="sys-card">
+              <div class="sys-icon purple">📋</div>
+              <div><div class="sys-val" style="color:var(--purple)" id="d-orders">—</div><div class="sys-label">All-Time Orders</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><span class="card-title">Recent Trades</span><button class="btn-outline btn-sm" onclick="App.nav('tradelog')">View All →</button></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>SL</th><th>TP</th><th>Signal</th><th>Broker</th><th>Status</th><th>Time</th></tr></thead>
+              <tbody id="dash-trades-tbody"><tr class="empty-row"><td colspan="10">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- ACCOUNTS -->
+        <div class="section" id="section-accounts">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Connected Broker Accounts</span><button class="btn-primary btn-sm" onclick="App.openAcctModal()">+ Connect Account</button></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Label</th><th>Broker</th><th>Username</th><th>Account ID</th><th>Mode</th><th>API Key</th><th>Actions</th></tr></thead>
+              <tbody id="accts-tbody"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+          <div class="guide"><h4>🔌 Connecting an Account</h4><ul>
+            <li><strong>TopstepX:</strong> Log in at <a href="https://topstepx.com" target="_blank">topstepx.com</a> → Settings → API Keys → generate a key. Enter your username + API key here.</li>
+            <li><strong>Lucid Markets:</strong> Obtain your API key &amp; secret from the Lucid portal. Enter your Account ID (e.g. ACC123456).</li>
+            <li>After connecting, click <strong>Test</strong> to verify credentials reach the broker live.</li>
+          </ul></div>
+        </div>
+
+        <!-- WEBHOOKS -->
+        <div class="section" id="section-webhooks">
+
+          <!-- ── Active Webhooks Panel ── -->
+          <div class="card" id="wh-url-panel" style="display:none">
+            <div class="card-head">
+              <span class="card-title">⚡ Active Webhooks</span>
+              <span style="font-size:12px;color:var(--muted)">These webhooks are live — copy a URL and paste it into TradingView</span>
+            </div>
+            <div class="card-body" id="wh-url-list" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+
+          <!-- ── All Webhooks Table ── -->
+          <div class="card">
+            <div class="card-head"><span class="card-title">All Webhooks</span><button class="btn-primary btn-sm" onclick="App.openWHModal()">+ New Webhook</button></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>Label</th><th>Broker</th><th>Status</th><th>Last Triggered</th><th>Creds</th><th>Webhook URL</th><th>Actions</th></tr></thead>
+              <tbody id="wh-tbody"><tr class="empty-row"><td colspan="7">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+
+          <!-- ── Step-by-Step Setup Guide ── -->
+          <div class="card">
+            <div class="card-head"><span class="card-title">📋 Step-by-Step Setup Guide</span></div>
+            <div class="card-body">
+
+              <!-- Step 1: pick a webhook -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:22px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);color:#0a0c12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:6px">Create or select a webhook</div>
+                  <div style="color:var(--muted);font-size:13px;margin-bottom:10px">Pick an existing webhook below to see its URL, or click <strong>+ New Webhook</strong> above to create one first.</div>
+                  <select id="guide-wh-select" onchange="App.whGuideSelect()" style="max-width:380px">
+                    <option value="">— Select a webhook —</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Webhook URL display -->
+              <div id="guide-url-row" style="display:none;margin-left:44px;margin-bottom:22px;padding:14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius)">
+                <div style="font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">Your Webhook URL</div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <code id="guide-url-text" style="flex:1;font-size:13px;color:var(--cyan);word-break:break-all;background:none;padding:0"></code>
+                  <button class="btn-primary btn-sm" onclick="App.copyText(document.getElementById('guide-url-text').textContent,this)">Copy URL</button>
+                </div>
+              </div>
+
+              <!-- Step 2 -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:22px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:4px">Open TradingView and create an Alert</div>
+                  <div style="color:var(--muted);font-size:13px">On your chart, click the <strong>Alerts</strong> (clock 🕐) icon in the right toolbar, then press <strong>+ Create Alert</strong>.</div>
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:22px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:4px">Set your alert condition</div>
+                  <div style="color:var(--muted);font-size:13px">Under the <strong>Settings</strong> tab, choose your indicator, strategy signal, or price level as the condition.</div>
+                </div>
+              </div>
+
+              <!-- Step 4 -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:22px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:4px">Paste the Webhook URL</div>
+                  <div style="color:var(--muted);font-size:13px">Switch to the <strong>Notifications</strong> tab inside the alert dialog. Enable <strong>Webhook URL</strong> and paste the URL from Step 1.</div>
+                </div>
+              </div>
+
+              <!-- Step 5 -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:22px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:6px">Set the alert Message (JSON)</div>
+                  <div style="color:var(--muted);font-size:13px;margin-bottom:10px">In the <strong>Message</strong> box, paste this JSON — TradingView fills in the dynamic fields automatically:</div>
+                  <div class="json-preview" style="font-size:12px">{{
+  "action":  "{{strategy.order.action}}",
+  "ticker":  "{{ticker}}",
+  "qty":     {{strategy.order.contracts}},
+  "signal":  "my-strategy"
+}}</div>
+                  <div style="margin-top:8px;font-size:12px;color:var(--muted)">For manual (indicator) alerts use <code>"action":"buy"</code> or <code>"action":"sell"</code> directly.</div>
+                </div>
+              </div>
+
+              <!-- Step 6 -->
+              <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:8px">
+                <div style="width:28px;height:28px;border-radius:50%;background:var(--green);color:#0a0c12;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</div>
+                <div style="flex:1">
+                  <div style="font-weight:600;margin-bottom:4px">Save and you're live! 🎉</div>
+                  <div style="color:var(--muted);font-size:13px">Click <strong>Save</strong> in TradingView. When the alert fires, the order routes instantly to your broker. Watch it appear in <strong>Trade Log</strong>.</div>
+                </div>
+              </div>
+
+              <div style="margin-top:20px;padding:12px 16px;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--radius)">
+                <strong style="color:var(--yellow);font-size:12px">⚠️ Tips</strong>
+                <ul style="padding-left:16px;margin-top:6px;font-size:12px;color:var(--muted);line-height:2">
+                  <li>TopstepX contract IDs look like <code>CON.F.US.ENQ.U25</code> — use this as the <code>ticker</code> value.</li>
+                  <li>Add <code>"sl"</code> / <code>"tp"</code> for price-based brackets, or <code>"slTicks"</code> / <code>"tpTicks"</code> for tick-based brackets.</li>
+                  <li>The <code>signal</code> field is logged in the Trade Log — great for labelling strategies.</li>
+                  <li>Make sure your account is connected and the Test Connection passes before going live.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- INDICATORS -->
+        <div class="section" id="section-indicators">
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">📊 Indicator Library</span>
+              <button class="btn-primary btn-sm" onclick="App.openIndicatorModal()">+ Add Indicator</button>
+            </div>
+            <div id="ind-empty" style="display:none;padding:40px;text-align:center;color:var(--muted)">
+              <div style="font-size:36px;margin-bottom:12px">📊</div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:6px">No indicators yet</div>
+              <div style="font-size:13px">Add your first indicator to get pre-filled webhook templates and Pine Script storage.</div>
+            </div>
+            <div id="ind-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:16px"></div>
+          </div>
+        </div>
+
+        <!-- TRADE SETTINGS -->
+        <div class="section" id="section-tradingview">
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Configuration</div>
+          <div style="font-size:22px;font-weight:800;margin-bottom:20px">Trade Settings</div>
+
+          <!-- Daily Risk Limits -->
+          <div class="card" style="max-width:640px;margin-bottom:20px">
+            <div class="card-head">
+              <span class="card-title">🛡️ Daily Risk Limits</span>
+              <span style="font-size:12px;color:var(--muted)">The system will stop trading for the day when either limit is hit</span>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group">
+                  <label>Daily Profit Target ($)</label>
+                  <div style="position:relative">
+                    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none">$</span>
+                    <input type="number" id="ts-daily-profit" min="0" step="0.01" placeholder="e.g. 500" style="padding-left:22px" />
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">Stop taking new trades once this profit is reached today</div>
+                </div>
+                <div class="form-group">
+                  <label>Daily Loss Limit ($)</label>
+                  <div style="position:relative">
+                    <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none">$</span>
+                    <input type="number" id="ts-daily-loss" min="0" step="0.01" placeholder="e.g. 200" style="padding-left:22px" />
+                  </div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">Stop taking new trades once losses reach this amount today</div>
+                </div>
+              </div>
+              <div style="margin-top:4px;padding:10px 14px;background:rgba(0,212,192,.05);border:1px solid rgba(0,212,192,.18);border-radius:var(--radius);font-size:12px;color:var(--muted)">
+                💡 Leave a field blank to disable that limit. Values reset at midnight each trading day.
+              </div>
+            </div>
+          </div>
+
+          <!-- Default Bracket Orders -->
+          <div class="card" style="max-width:640px;margin-bottom:20px">
+            <div class="card-head">
+              <span class="card-title">🎯 Default Bracket Orders</span>
+              <span style="font-size:12px;color:var(--muted)">Applied when a webhook alert doesn't specify its own TP / SL</span>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group">
+                  <label>Take Profit (ticks)</label>
+                  <input type="number" id="ts-tp-ticks" min="0" step="1" placeholder="e.g. 12" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">Number of ticks above/below entry for the profit target</div>
+                </div>
+                <div class="form-group">
+                  <label>Stop Loss (ticks)</label>
+                  <input type="number" id="ts-sl-ticks" min="0" step="1" placeholder="e.g. 8" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">Number of ticks above/below entry for the stop loss</div>
+                </div>
+              </div>
+              <div style="margin-top:4px;padding:10px 14px;background:rgba(0,201,122,.05);border:1px solid rgba(0,201,122,.15);border-radius:var(--radius);font-size:12px;color:var(--muted)">
+                💡 You can still override these per-alert by including <code>"tpTicks"</code> or <code>"slTicks"</code> in your TradingView alert JSON. Leave blank to send orders without automatic brackets.
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="card" style="max-width:640px;margin-bottom:20px">
+            <div class="card-head">
+              <span class="card-title">📋 Order Summary</span>
+              <span style="font-size:12px;color:var(--muted)">Default order sizing and daily trade cap</span>
+            </div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group">
+                  <label>Max Trades Per Day</label>
+                  <input type="number" id="ts-max-trades" min="1" step="1" placeholder="e.g. 10" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">System stops accepting new orders once this many trades are taken today</div>
+                </div>
+                <div class="form-group">
+                  <label>Default Contracts</label>
+                  <input type="number" id="ts-default-contracts" min="1" step="1" placeholder="e.g. 1" />
+                  <div style="font-size:11px;color:var(--muted);margin-top:4px">Number of contracts to trade when an alert doesn't specify a quantity</div>
+                </div>
+              </div>
+              <div style="margin-top:4px;padding:10px 14px;background:rgba(124,111,245,.06);border:1px solid rgba(124,111,245,.2);border-radius:var(--radius);font-size:12px;color:var(--muted)">
+                💡 Override contracts per-alert by including <code>"qty"</code> in your TradingView alert JSON. Leave Max Trades blank to trade without a daily cap.
+              </div>
+            </div>
+          </div>
+
+          <!-- Save button row -->
+          <div style="max-width:640px;display:flex;align-items:center;gap:14px">
+            <button class="btn-primary" id="ts-save-btn" onclick="App.saveTradeSettings()" style="min-width:140px">Save Settings</button>
+            <div id="ts-save-status" style="font-size:13px;display:none"></div>
+          </div>
+        </div>
+
+        <!-- ACTIVE TRADES -->
+        <div class="section" id="section-active-trades">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">Live Positions</div>
+              <div style="font-size:22px;font-weight:800">Active Trades</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <span id="at-live-badge" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:5px 12px;border-radius:20px"><span class="live-dot"></span> Live</span>
+              <button class="btn-outline btn-sm" onclick="App.loadActiveTrades()">↻ Refresh</button>
+            </div>
+          </div>
+
+          <!-- Summary bar -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px" id="at-summary">
+            <div class="sys-card"><div class="sys-icon" style="background:rgba(0,201,122,.1);font-size:18px">📈</div><div><div class="sys-val" id="at-total">0</div><div class="sys-label">Open Positions</div></div></div>
+            <div class="sys-card"><div class="sys-icon" style="background:rgba(0,201,122,.1);font-size:18px">✅</div><div><div class="sys-val c-green" id="at-long">0</div><div class="sys-label">Long</div></div></div>
+            <div class="sys-card"><div class="sys-icon" style="background:rgba(255,51,88,.1);font-size:18px">🩳</div><div><div class="sys-val c-red" id="at-short">0</div><div class="sys-label">Short</div></div></div>
+            <div class="sys-card"><div class="sys-icon" style="background:rgba(0,212,192,.1);font-size:18px">💹</div><div><div class="sys-val" id="at-unrealized">—</div><div class="sys-label">Unrealized P&amp;L</div></div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title" style="display:flex;align-items:center;gap:8px"><span class="live-dot"></span> Open Positions</span>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="at-filter" onchange="App.filterActiveTrades()" style="width:auto;padding:4px 10px;font-size:12px">
+                  <option value="all">All Brokers</option>
+                  <option value="topstepx">TopstepX</option>
+                  <option value="lucid">Lucid Markets</option>
+                </select>
+              </div>
+            </div>
+            <div class="tbl-wrap" id="at-tbl-wrap">
+              <table id="at-table">
+                <thead><tr>
+                  <th>Status</th><th>Symbol</th><th>Side</th><th>Qty</th>
+                  <th>Entry Price</th><th>SL</th><th>TP</th>
+                  <th>Signal</th><th>Broker</th><th>Opened</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="at-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:4px">
+            <div class="card-head"><span class="card-title">Recently Closed</span><button class="btn-outline btn-sm" onclick="App.nav('tradelog')">Full Log →</button></div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>Exit</th><th>P&amp;L</th><th>Signal</th><th>Closed</th></tr></thead>
+                <tbody id="at-closed-tbody"><tr class="empty-row"><td colspan="8">—</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRADE LOG -->
+        <div class="section" id="section-tradelog">
+          <!-- PnL Summary Cards -->
+          <div class="dash-grid" style="margin-bottom:16px">
+            <div class="dcard glow-green" id="tl-total-card">
+              <span class="dcard-icon">💰</span>
+              <div class="dcard-label">Total All-Time P&amp;L</div>
+              <div class="dcard-val" id="tl-total-pnl">—</div>
+              <div class="dcard-sub">All closed trades</div>
+            </div>
+            <div class="dcard glow-cyan" id="tl-month-card">
+              <span class="dcard-icon">📅</span>
+              <div class="dcard-label">This Month</div>
+              <div class="dcard-val" id="tl-month-pnl">—</div>
+              <div class="dcard-sub">This week: <span id="tl-week-pnl" style="font-weight:600">—</span></div>
+            </div>
+            <div class="dcard glow-gold" id="tl-today-card">
+              <span class="dcard-icon">📊</span>
+              <div class="dcard-label">Today</div>
+              <div class="dcard-val" id="tl-today-pnl">—</div>
+              <div class="dcard-sub">Updated on refresh</div>
+            </div>
+          </div>
+          <!-- Daily PnL History -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-head">
+              <span class="card-title">📈 Daily P&amp;L History</span>
+              <span style="font-size:11px;color:var(--muted)">Last 30 days — saved automatically from your trade log</span>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Date</th><th>Daily P&amp;L</th><th>Trades</th><th>Wins</th><th>Losses</th><th>Win Rate</th></tr></thead>
+                <tbody id="tl-daily-tbody"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- All Trades -->
+          <div class="card">
+            <div class="card-head"><span class="card-title">All Trades</span><button class="btn-outline btn-sm" onclick="App.loadTradeLog()">↻ Refresh</button></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>#</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Entry</th><th>SL</th><th>TP</th><th>Type</th><th>Signal</th><th>Broker</th><th>Status</th><th>PnL</th><th>Opened</th><th>Closed</th></tr></thead>
+              <tbody id="tl-tbody"><tr class="empty-row"><td colspan="14">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- ORDER HISTORY -->
+        <div class="section" id="section-orders">
+          <div class="card">
+            <div class="card-head"><span class="card-title">Order History</span><button class="btn-outline btn-sm" onclick="App.loadOrders()">↻ Refresh</button></div>
+            <div class="tbl-wrap"><table>
+              <thead><tr><th>#</th><th>Symbol</th><th>Side</th><th>Qty</th><th>Price</th><th>SL</th><th>TP</th><th>Type</th><th>Signal</th><th>Broker</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="ord-tbody"><tr class="empty-row"><td colspan="12">Loading…</td></tr></tbody>
+            </table></div>
+          </div>
+        </div>
+
+        <!-- PROFILE -->
+        <div class="section" id="section-profile">
+          <div class="card" style="max-width:500px">
+            <div class="card-head"><span class="card-title">Account Information</span></div>
+            <div class="card-body">
+              <div class="info-grid">
+                <div class="info-field"><label>Username</label><div class="val" id="p-user">—</div></div>
+                <div class="info-field"><label>Email</label><div class="val" id="p-email">—</div></div>
+                <div class="info-field"><label>User ID</label><div class="val" id="p-id" style="font-size:11px;font-family:monospace">—</div></div>
+                <div class="info-field"><label>Member Since</label><div class="val" id="p-since">—</div></div>
+              </div>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+                <button class="btn-danger btn-sm" onclick="App.logout()">Sign Out</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="max-width:500px;margin-top:20px">
+            <div class="card-head"><span class="card-title">API Reference</span></div>
+            <div class="card-body">
+              <div style="font-size:12px;color:var(--muted);line-height:2.2">
+                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/auth/register</code> – Create account</div>
+                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/auth/login</code> – Get JWT</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/accounts</code> – List broker accounts</div>
+                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/accounts</code> – Connect broker account</div>
+                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/webhooks</code> – Create webhook</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/webhooks</code> – List webhooks</div>
+                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/webhook/:token</code> – TradingView alert (public)</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/tradelog</code> – Trade log</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/tradelog/stats</code> – Daily stats</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/user/orders</code> – Order history</div>
+                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/health</code> – Health check</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ORDER FLOW AI SECTION -->
+        <div class="section" id="section-orderflow">
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:20px;font-weight:700;color:var(--text)">Order Flow Auto-Trader</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">
+                AI-driven order flow engine — Delta · Imbalance · Absorption · EMA Trend · ATR Regime · 2:1 R:R
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn-outline btn-sm" onclick="App.loadOrderFlow()">↻ Refresh</button>
+              <button class="btn-primary" onclick="App.openBotModal()">＋ New Bot</button>
+            </div>
+          </div>
+
+          <!-- Strategy explainer banner -->
+          <div style="background:rgba(0,201,122,.06);border:1px solid rgba(0,201,122,.2);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--muted);line-height:1.9">
+            <div style="color:var(--green);font-weight:700;font-size:13px;margin-bottom:6px">⚡ How Order Flow Auto-Trading Works</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
+              <div><strong style="color:var(--text)">4-metric voting engine</strong> scores every bar across Delta strength, Cumulative Delta trend, Volume Imbalance, and Absorption events. A bonus is added when the EMA slope agrees.</div>
+              <div><strong style="color:var(--text)">ATR regime filter</strong> suppresses signals when volatility is too low (choppy, no follow-through) or too high (gapping past your SL). Only <em>normal</em> regime bars trade.</div>
+              <div style="margin-top:6px"><strong style="color:var(--text)">2:1 Risk-Reward</strong> — TP is always SL × R:R ratio. At a 40% win rate a 2:1 system breaks even; above 40% is profitable. Edge comes from <em>only trading high-confidence, trend-aligned setups</em>.</div>
+              <div style="margin-top:6px"><strong style="color:var(--text)">Circuit breakers</strong> — max daily trades, max daily loss, and consecutive-loss limit automatically halt the bot to protect your account.</div>
+            </div>
+          </div>
+
+          <!-- Bot grid -->
+          <div id="of-bots-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:28px"></div>
+
+          <!-- Signal log -->
+          <div class="card">
+            <div class="card-head">
+              <span class="card-title">Signal Log</span>
+              <button class="btn-outline btn-sm" onclick="App.loadOrderFlow()">↻ Refresh</button>
+            </div>
+            <div class="card-body" style="overflow-x:auto">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Time</th><th>Bot</th><th>Symbol</th><th>Signal</th>
+                  <th>Conf</th><th>Regime</th><th>Trend</th><th>SL</th><th>TP</th><th>RR</th>
+                  <th>Result</th><th>Reasons</th>
+                </tr></thead>
+                <tbody id="of-signals-tbody"><tr><td colspan="12" style="color:var(--muted);text-align:center;padding:24px">No signals yet — start a bot to begin</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Profitability calculator -->
+          <div class="card" style="margin-top:16px">
+            <div class="card-head"><span class="card-title">📐 2:1 R:R Profitability Calculator</span></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">
+                <div class="form-group" style="margin:0"><label>Win Rate (%)</label><input type="number" id="calc-wr" value="45" min="1" max="99" oninput="App.calcRR()" /></div>
+                <div class="form-group" style="margin:0"><label>SL (ticks)</label><input type="number" id="calc-sl" value="10" min="1" oninput="App.calcRR()" /></div>
+                <div class="form-group" style="margin:0"><label>TP (ticks)</label><input type="number" id="calc-tp" value="20" min="1" oninput="App.calcRR()" readonly style="opacity:.7" /></div>
+                <div class="form-group" style="margin:0"><label>Trades / day</label><input type="number" id="calc-tpd" value="6" min="1" oninput="App.calcRR()" /></div>
+              </div>
+              <div id="calc-output" style="background:var(--bg3);border-radius:8px;padding:14px;font-size:13px;line-height:2"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER FLOW BOT MODAL -->
+<div class="modal-ov hidden" id="of-bot-modal">
+  <div class="modal" style="max-width:560px">
+    <h3 id="of-modal-title">New Order Flow Bot</h3>
+    <div id="of-bot-err" class="err-box"></div>
+    <input type="hidden" id="of-bot-id" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">
+      <div class="form-group" style="grid-column:1/-1"><label>Bot Name</label><input type="text" id="of-name" placeholder="e.g. ES Delta Scalper 2:1" /></div>
+      <div class="form-group"><label>Symbol</label><input type="text" id="of-symbol" placeholder="ES, NQ, MES…" /></div>
+      <div class="form-group"><label>Quantity</label><input type="number" id="of-qty" value="1" min="1" /></div>
+      <div class="form-group"><label>Broker</label>
+        <select id="of-broker" onchange="App.ofBrokerChange()">
+          <option value="">— Select —</option>
+          <option value="topstepx">TopstepX</option>
+          <option value="lucid">Lucid Markets</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Account</label>
+        <select id="of-account"><option value="">— Select Account —</option></select>
+      </div>
+
+      <!-- ── Risk / Reward ── -->
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);margin:6px 0 10px;padding-top:10px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.06em">RISK / REWARD (2:1 enforced)</div>
+      <div class="form-group"><label>SL (ticks)</label><input type="number" id="of-sl" value="10" min="1" oninput="App.ofUpdateTP()" /></div>
+      <div class="form-group" style="position:relative">
+        <label>TP (ticks) <span style="color:var(--muted);font-size:10px">— auto-derived from R:R</span></label>
+        <input type="number" id="of-tp" value="20" readonly style="opacity:.7;cursor:default" />
+      </div>
+      <div class="form-group">
+        <label>Risk:Reward Ratio</label>
+        <select id="of-rr" onchange="App.ofUpdateTP()">
+          <option value="1.5">1.5 : 1</option>
+          <option value="2" selected>2 : 1  (recommended)</option>
+          <option value="2.5">2.5 : 1</option>
+          <option value="3">3 : 1</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Max Daily Loss ($)</label><input type="number" id="of-maxloss" value="500" min="0" /></div>
+      <div class="form-group"><label>Max Daily Trades</label><input type="number" id="of-maxtr" value="10" min="1" /></div>
+      <div class="form-group"><label>Max Consec. Losses</label><input type="number" id="of-maxcl" value="3" min="1" title="Bot halts after N losses in a row" /></div>
+
+      <!-- ── Signal Engine ── -->
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);margin:6px 0 10px;padding-top:10px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.06em">SIGNAL ENGINE</div>
+      <div class="form-group"><label>Min Confidence %</label><input type="range" id="of-conf" min="40" max="95" value="65" oninput="document.getElementById('of-conf-val').textContent=this.value" style="width:100%" /><span id="of-conf-val" style="color:var(--accent);font-weight:700">65</span></div>
+      <div class="form-group"><label>Delta Threshold</label><input type="number" id="of-delta" value="150" /></div>
+      <div class="form-group"><label>Imbalance Threshold</label><input type="number" id="of-imb" value="0.62" step="0.01" /></div>
+      <div class="form-group"><label>Cooldown (bars)</label><input type="number" id="of-cool" value="3" min="1" /></div>
+
+      <!-- ── Trend + ATR Regime ── -->
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);margin:6px 0 10px;padding-top:10px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.06em">TREND + ATR REGIME FILTER</div>
+      <div class="form-group"><label>EMA Trend Period</label><input type="number" id="of-trendp" value="10" min="2" /></div>
+      <div class="form-group"><label>ATR Period</label><input type="number" id="of-atrp" value="10" min="2" /></div>
+      <div class="form-group"><label>Min ATR ticks (chop filter)</label><input type="number" id="of-minatr" value="3" min="0" /></div>
+      <div class="form-group"><label>Max ATR ticks (gap filter)</label><input type="number" id="of-maxatr" value="120" min="0" /></div>
+
+      <div class="form-group" style="grid-column:1/-1"><label>Data Feed URL (optional — live push)</label><input type="text" id="of-feed" placeholder="https://yourprovider.com/stream" /></div>
+      <div class="form-group" style="grid-column:1/-1"><div class="check-row"><input type="checkbox" id="of-sim" checked /><label for="of-sim">Simulation Mode — synthetic ticks, simulated outcomes (safe for testing)</label></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeBotModal()">Cancel</button>
+      <button class="btn-primary" id="of-save-btn" onclick="App.saveBot()">Save Bot</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT MODAL -->
+<div class="modal-ov hidden" id="acct-modal">
+  <div class="modal">
+    <h3 id="am-title">Connect Broker Account</h3>
+    <div id="acct-err" class="err-box"></div>
+
+    <!-- Step indicators -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;align-items:center">
+      <div id="am-ind-1" style="flex:1;padding:6px 10px;border-radius:var(--radius);font-size:12px;font-weight:600;background:var(--accent);color:#021110;text-align:center">1 · Credentials</div>
+      <div style="color:var(--border2);font-size:16px">›</div>
+      <div id="am-ind-2" style="flex:1;padding:6px 10px;border-radius:var(--radius);font-size:12px;font-weight:600;background:var(--bg3);color:var(--muted);text-align:center">2 · Select Account</div>
+    </div>
+
+    <!-- STEP 1: Credentials -->
+    <div id="am-step1">
+      <div class="form-group"><label>Broker</label>
+        <select id="am-broker" onchange="App.acctBrokerChange()">
+          <option value="">— Select Broker —</option>
+          <option value="topstepx">TopstepX</option>
+          <option value="lucid">Lucid Markets</option>
+        </select>
+      </div>
+      <div id="am-topstepx" class="broker-sect">
+        <div class="sect-div"></div><div class="sect-lbl">TopstepX Credentials</div>
+        <div class="form-group"><label>Username</label><input type="text" id="am-ts-user" placeholder="your_topstepx_username" autocomplete="off" /></div>
+        <div class="form-group"><label>API Key</label><input type="text" id="am-ts-key" placeholder="generated from TopstepX settings" autocomplete="off" /></div>
+        <div class="form-group"><div class="check-row"><input type="checkbox" id="am-ts-sim" /><label for="am-ts-sim">Demo / simulation mode</label></div></div>
+      </div>
+      <div id="am-lucid" class="broker-sect">
+        <div class="sect-div"></div><div class="sect-lbl">Lucid Markets Credentials</div>
+        <div class="form-group"><label>Username</label><input type="text" id="am-lm-user" placeholder="your_lucid_username" autocomplete="off" /></div>
+        <div class="form-group"><label>API Key</label><input type="text" id="am-lm-key" placeholder="lm_key_xxxxx" autocomplete="off" /></div>
+        <div class="form-group"><label>API Secret</label><input type="password" id="am-lm-secret" placeholder="lm_secret_xxxxx" autocomplete="off" /></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="App.closeAcctModal()">Cancel</button>
+        <button class="btn-primary" id="am-fetch-btn" onclick="App.acctFetchAccounts()">Find My Accounts →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: Account Picker -->
+    <div id="am-step2" style="display:none">
+      <div style="margin-bottom:16px;padding:10px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);font-size:13px">
+        <span style="color:var(--muted)">Broker:</span> <span id="am-s2-broker" style="font-weight:600;color:var(--accent)"></span>
+        <span style="margin-left:16px;color:var(--muted)">User:</span> <span id="am-s2-user" style="font-weight:600"></span>
+      </div>
+      <div class="form-group">
+        <label>Select Account to Connect</label>
+        <select id="am-acct-select" style="font-size:14px"><option value="">— Choose an account —</option></select>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">These are the live accounts on your broker platform. Select the one you want to route trades to.</div>
+      </div>
+      <div id="am-acct-detail" style="display:none;margin-top:4px;padding:10px 14px;background:rgba(0,212,192,.05);border:1px solid rgba(0,212,192,.18);border-radius:var(--radius);font-size:12px;color:var(--muted)"></div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="App.acctBackToStep1()">← Back</button>
+        <button class="btn-primary" id="am-save-btn" onclick="App.saveAccount()">Connect Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEBHOOK MODAL -->
+<div class="modal-ov hidden" id="wh-modal">
+  <div class="modal">
+    <h3 id="wh-modal-title">New Webhook</h3>
+    <div id="wh-err" class="err-box"></div>
+    <input type="hidden" id="wm-id" />
+    <div class="form-group">
+      <label>Webhook Label</label>
+      <input type="text" id="wm-label" placeholder="e.g. ES Trend Strategy" />
+    </div>
+    <div class="form-group">
+      <label>Linked Account</label>
+      <select id="wm-account">
+        <option value="">— Select a connected account —</option>
+      </select>
+      <div style="margin-top:6px;font-size:12px;color:var(--muted)">Don't see your account? <a href="#" onclick="App.closeWHModal();App.nav('accounts');">Connect one first →</a></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeWHModal()">Cancel</button>
+      <button class="btn-primary" id="wm-save-btn" onclick="App.saveWebhook()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDICATOR MODAL -->
+<div class="modal-ov hidden" id="ind-modal">
+  <div class="modal" style="max-width:640px;width:95%">
+    <h3 id="ind-modal-title">Add Indicator</h3>
+    <div id="ind-err" class="err-box"></div>
+    <input type="hidden" id="ind-id" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group" style="grid-column:1/-1"><label>Indicator Name</label><input type="text" id="ind-name" placeholder="e.g. EMA Cross Strategy" /></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Description</label><input type="text" id="ind-desc" placeholder="Brief description of what this indicator does" /></div>
+      <div class="form-group"><label>Default Ticker / Contract</label><input type="text" id="ind-ticker" placeholder="e.g. CON.F.US.ENQ.U25" /></div>
+    </div>
+    <div class="form-group">
+      <label>Alert Message JSON Template</label>
+      <textarea id="ind-template" rows="5" style="font-family:monospace;font-size:12px;resize:vertical" placeholder='{
+  "action":  "{{strategy.order.action}}",
+  "ticker":  "CON.F.US.ENQ.U25",
+  "qty":     {{strategy.order.contracts}},
+  "signal":  "my-indicator"
+}'></textarea>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">This JSON will be pre-filled when you create a webhook from this indicator.</div>
+    </div>
+    <div class="form-group">
+      <label>Pine Script Source Code</label>
+      <textarea id="ind-source" rows="10" style="font-family:'Courier New',monospace;font-size:12px;resize:vertical;background:var(--bg3)" placeholder="//@version=5
+indicator('My Indicator', overlay=true)
+// paste your Pine Script here..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeIndicatorModal()">Cancel</button>
+      <button class="btn-primary" id="ind-save-btn" onclick="App.saveIndicator()">Save Indicator</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDICATOR USE MODAL -->
+<div class="modal-ov hidden" id="ind-use-modal">
+  <div class="modal" style="max-width:580px;width:95%">
+    <h3 id="ind-use-title">Create Webhook from Indicator</h3>
+    <div id="ind-use-err" class="err-box"></div>
+    <input type="hidden" id="ind-use-ind-id" />
+    <div class="form-group">
+      <label>Webhook Label</label>
+      <input type="text" id="ind-use-label" placeholder="e.g. ES EMA Cross" />
+    </div>
+    <div class="form-group">
+      <label>Linked Account</label>
+      <select id="ind-use-account">
+        <option value="">— Select a connected account —</option>
+      </select>
+    </div>
+    <div id="ind-use-template-row" style="display:none">
+      <div class="sect-div"></div>
+      <div class="sect-lbl">Alert Message JSON — paste this into TradingView alert message</div>
+      <div class="json-preview" id="ind-use-tmpl" style="font-size:12px;max-height:140px;overflow:auto"></div>
+      <button class="btn-outline btn-sm" style="margin-top:8px" onclick="App.copyText(document.getElementById('ind-use-tmpl').textContent,this)">Copy JSON</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeIndicatorUseModal()">Cancel</button>
+      <button class="btn-primary" id="ind-use-save-btn" onclick="App.saveIndicatorWebhook()">Create Webhook</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDICATOR MODAL -->
+<div class="modal-ov hidden" id="ind-modal">
+  <div class="modal" style="max-width:640px;width:95%">
+    <h3 id="ind-modal-title">Add Indicator</h3>
+    <div id="ind-err" class="err-box"></div>
+    <input type="hidden" id="ind-id" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group" style="grid-column:1/-1"><label>Indicator Name</label><input type="text" id="ind-name" placeholder="e.g. EMA Cross Strategy" /></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Description</label><input type="text" id="ind-desc" placeholder="Brief description of what this indicator does" /></div>
+      <div class="form-group"><label>Default Ticker / Contract</label><input type="text" id="ind-ticker" placeholder="e.g. CON.F.US.ENQ.U25" /></div>
+    </div>
+    <div class="form-group">
+      <label>Alert Message JSON Template</label>
+      <textarea id="ind-template" rows="5" style="font-family:monospace;font-size:12px;resize:vertical" placeholder='{
+  "action":  "{{strategy.order.action}}",
+  "ticker":  "CON.F.US.ENQ.U25",
+  "qty":     {{strategy.order.contracts}},
+  "signal":  "my-indicator"
+}'></textarea>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">This JSON will be pre-filled when you create a webhook from this indicator.</div>
+    </div>
+    <div class="form-group">
+      <label>Pine Script Source Code</label>
+      <textarea id="ind-source" rows="10" style="font-family:'Courier New',monospace;font-size:12px;resize:vertical;background:var(--bg3)" placeholder="//@version=5
+indicator('My Indicator', overlay=true)
+// paste your Pine Script here..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeIndicatorModal()">Cancel</button>
+      <button class="btn-primary" id="ind-save-btn" onclick="App.saveIndicator()">Save Indicator</button>
+    </div>
+  </div>
+</div>
+
+<!-- INDICATOR USE MODAL -->
+<div class="modal-ov hidden" id="ind-use-modal">
+  <div class="modal" style="max-width:580px;width:95%">
+    <h3 id="ind-use-title">Create Webhook from Indicator</h3>
+    <div id="ind-use-err" class="err-box"></div>
+    <input type="hidden" id="ind-use-ind-id" />
+    <div class="form-group">
+      <label>Webhook Label</label>
+      <input type="text" id="ind-use-label" placeholder="e.g. ES EMA Cross" />
+    </div>
+    <div class="form-group">
+      <label>Linked Account</label>
+      <select id="ind-use-account">
+        <option value="">— Select a connected account —</option>
+      </select>
+      <div style="margin-top:5px;font-size:12px;color:var(--muted)">No accounts yet? <a href="#" onclick="App.closeIndicatorUseModal();App.nav('accounts');">Connect one first →</a></div>
+    </div>
+    <div id="ind-use-template-row" style="display:none">
+      <div class="sect-div"></div>
+      <div class="sect-lbl">Alert Message JSON — paste this into TradingView alert message</div>
+      <div class="json-preview" id="ind-use-tmpl" style="font-size:12px;max-height:140px;overflow:auto"></div>
+      <button class="btn-outline btn-sm" style="margin-top:8px" onclick="App.copyText(document.getElementById('ind-use-tmpl').textContent,this)">Copy JSON</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-outline" onclick="App.closeIndicatorUseModal()">Cancel</button>
+      <button class="btn-primary" id="ind-use-save-btn" onclick="App.saveIndicatorWebhook()">Create Webhook</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM -->
+<div id="confirm-ov" class="hidden">
+  <div class="confirm-box">
+    <h4 id="cf-title">Confirm</h4><p id="cf-msg">Are you sure?</p>
+    <div class="confirm-btns">
+      <button class="btn-outline btn-sm" id="cf-cancel">Cancel</button>
+      <button class="btn-danger btn-sm" id="cf-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-ct"></div>
+
+<script>
+'use strict';
+const API = {
+  token: null,
+  async req(method, path, body) {
+    const h = { 'Content-Type': 'application/json' };
+    if (this.token) h['Authorization'] = `Bearer ${this.token}`;
+    const opts = { method, headers: h };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  },
+  get: p => API.req('GET', p),
+  post: (p,b) => API.req('POST', p, b),
+  put: (p,b) => API.req('PUT', p, b),
+  del: p => API.req('DELETE', p),
+};
+
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  document.getElementById('toast-ct').appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+
+function confirmDlg(title, msg) {
+  return new Promise(resolve => {
+    const ov = document.getElementById('confirm-ov');
+    document.getElementById('cf-title').textContent = title;
+    document.getElementById('cf-msg').textContent = msg;
+    ov.classList.remove('hidden');
+    document.getElementById('cf-ok').onclick     = () => { ov.classList.add('hidden'); resolve(true); };
+    document.getElementById('cf-cancel').onclick = () => { ov.classList.add('hidden'); resolve(false); };
+  });
+}
+
+const fmtDate  = iso => iso ? new Date(iso).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtPrice = v => v != null ? '$'+parseFloat(v).toFixed(2) : '—';
+const fmtPnl   = v => { if (v==null) return '<span class="pnl-zero">—</span>'; const c=v>0?'pnl-pos':v<0?'pnl-neg':'pnl-zero'; return `<span class="${c}">${v>0?'+':''}$${Math.abs(parseFloat(v)).toFixed(2)}</span>`; };
+const sideBadge   = s => !s?'—':`<span class="badge ${['buy','long'].includes((s||'').toLowerCase())?'bg-green':'bg-red'}">${s.toUpperCase()}</span>`;
+const statusBadge = s => { const m={submitted:'bg-green',open:'bg-green',closed:'bg-blue',failed:'bg-red',pending:'bg-yellow'}; return `<span class="badge ${m[s]||'bg-yellow'}">${s||'?'}</span>`; };
+const brokerBadge = b => { const m={topstepx:'bg-blue',lucid:'bg-purple'}; return `<span class="badge ${m[b]||'bg-blue'}">${b||'?'}</span>`; };
+const slFmt = t => t.sl ? `<span class="c-red">${fmtPrice(t.sl)}</span>` : t.slTicks ? `<span class="c-red">${t.slTicks}t</span>` : '—';
+const tpFmt = t => t.tp ? `<span class="c-green">${fmtPrice(t.tp)}</span>` : t.tpTicks ? `<span class="c-green">${t.tpTicks}t</span>` : '—';
+
+const App = {
+  user:null, webhooks:[], accounts:[], orders:[], trades:[], indicators:[],
+
+  init() {
+    // Handle Discord OAuth callback (?discord_session=... or ?discord_error=...)
+    const params = new URLSearchParams(window.location.search);
+    const dsSession = params.get('discord_session');
+    const dsError   = params.get('discord_error');
+    if (dsSession) {
+      try {
+        const { token, username, email } = JSON.parse(decodeURIComponent(dsSession));
+        API.token = token;
+        this.user = { username, email };
+        localStorage.setItem('wt_token', token);
+        localStorage.setItem('wt_user', JSON.stringify(this.user));
+        // Clean the URL
+        window.history.replaceState({}, '', '/');
+        this.showApp();
+        return;
+      } catch(e) { /* fall through to normal init */ }
+    }
+    if (dsError) {
+      window.history.replaceState({}, '', '/');
+      this.authErr(decodeURIComponent(dsError));
+    }
+    const t=localStorage.getItem('wt_token'), u=localStorage.getItem('wt_user');
+    if (t&&u) { API.token=t; this.user=JSON.parse(u); this.showApp(); }
+    this.checkHealth();
+  },
+  async checkHealth() {
+    try {
+      const d=await API.get('/health');
+      document.getElementById('health-badge').innerHTML=`<span style="color:var(--green)"><span class="health-dot" style="filter:drop-shadow(0 0 4px var(--green))">●</span> Online</span> <span style="color:var(--muted)">${Math.round(d.uptime)}s</span>`;
+    } catch { document.getElementById('health-badge').innerHTML='<span style="color:var(--red)">● Offline</span>'; }
+  },
+
+  authTab(t) {
+    document.getElementById('auth-err').style.display='none';
+    ['login','reg'].forEach(id => {
+      document.getElementById(`tab-${id}`).classList.toggle('active',id===t);
+    });
+    document.getElementById('login-form').style.display=t==='login'?'':'none';
+    document.getElementById('reg-form').style.display=t==='reg'?'':'none';
+  },
+  authErr(m){const el=document.getElementById('auth-err');el.textContent=m;el.style.display='block';},
+  async login(e) {
+    e.preventDefault();
+    const btn=document.getElementById('l-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+    try {
+      const d=await API.post('/auth/login',{email:document.getElementById('l-email').value,password:document.getElementById('l-pass').value});
+      API.token=d.token; this.user={username:d.username,email:d.email};
+      localStorage.setItem('wt_token',d.token); localStorage.setItem('wt_user',JSON.stringify(this.user));
+      this.showApp();
+    } catch(err){this.authErr(err.message);}
+    finally{btn.disabled=false;btn.textContent='Sign In';}
+  },
+  async register(e) {
+    e.preventDefault();
+    const btn=document.getElementById('r-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span>';
+    try {
+      const d=await API.post('/auth/register',{username:document.getElementById('r-user').value,email:document.getElementById('r-email').value,password:document.getElementById('r-pass').value});
+      API.token=d.token; this.user={username:document.getElementById('r-user').value,email:document.getElementById('r-email').value};
+      localStorage.setItem('wt_token',d.token); localStorage.setItem('wt_user',JSON.stringify(this.user));
+      this.showApp(); toast('Account created! Welcome.','success');
+    } catch(err){this.authErr(err.message);}
+    finally{btn.disabled=false;btn.textContent='Create Account';}
+  },
+  logout() {
+    API.token=null; this.user=null;
+    localStorage.removeItem('wt_token'); localStorage.removeItem('wt_user');
+    document.getElementById('app').style.display='none';
+    document.getElementById('auth-page').style.display='';
+    this.authTab('login');
+  },
+
+  showApp() {
+    document.getElementById('auth-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+    if (this.user) {
+      document.getElementById('sb-avatar').textContent=(this.user.username||'U').charAt(0).toUpperCase();
+      document.getElementById('sb-uname').textContent=this.user.username||'—';
+      document.getElementById('sb-email').textContent=this.user.email||'—';
+    }
+    this.nav('dashboard'); this.loadProfile();
+  },
+  dashBroker: 'all',
+
+  switchDashBroker(b) {
+    this.dashBroker = b;
+    ['all','topstepx','lucid'].forEach(id => {
+      const el = document.getElementById(`dbt-${id}`);
+      if (el) el.classList.toggle('active', id === b);
+    });
+    this.loadDailyStats();
+  },
+
+  nav(s) {
+    document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.s===s));
+    document.querySelectorAll('.section').forEach(el=>el.classList.toggle('active',el.id===`section-${s}`));
+    const titles={dashboard:'Dashboard',accounts:'Accounts',webhooks:'Webhooks',indicators:'Indicators',tradingview:'Trade Settings','active-trades':'Active Trades',tradelog:'Trade Log',orders:'Order History',profile:'Profile',orderflow:'Order Flow AI'};
+    document.getElementById('topbar-title').textContent=titles[s]||s;
+    // Show broker toggle only on dashboard
+    const toggle = document.getElementById('dash-broker-toggle');
+    if (toggle) toggle.style.display = (s === 'dashboard') ? '' : 'none';
+    if(s==='dashboard')      this.loadDashboard();
+    if(s==='accounts')       this.loadAccounts();
+    if(s==='webhooks')       this.loadWebhooks();
+    if(s==='indicators')     this.loadIndicators();
+    if(s==='tradingview')    this.loadTradeSettings();
+    if(s==='active-trades')  this.loadActiveTrades();
+    if(s==='tradelog')       this.loadTradeLog();
+    if(s==='orders')         this.loadOrders();
+    if(s==='orderflow')      this.loadOrderFlow();
+  },
+
+  async loadProfile() {
+    try {
+      const d=await API.get('/user/me'); this.user=d;
+      localStorage.setItem('wt_user',JSON.stringify(d));
+      document.getElementById('p-user').textContent=d.username;
+      document.getElementById('p-email').textContent=d.email;
+      document.getElementById('p-id').textContent=d.id;
+      document.getElementById('p-since').textContent=fmtDate(d.createdAt);
+      document.getElementById('sb-uname').textContent=d.username;
+      document.getElementById('sb-email').textContent=d.email;
+      document.getElementById('sb-avatar').textContent=d.username.charAt(0).toUpperCase();
+    } catch(err){if(err.message.includes('401'))this.logout();}
+  },
+
+  async loadDashboard() {
+    // Load data first, then compute broker-filtered stats from the loaded trades
+    await Promise.all([this.loadWebhooks(true),this.loadAccounts(true),this.loadOrders(true),this.loadTradeLog(true)]);
+    await this.loadDailyStats();
+  },
+  async loadDailyStats() {
+    const broker = this.dashBroker || 'all';
+    // Filter trades by broker selection
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const allTodayTrades = this.trades.filter(t => new Date(t.openedAt||t.createdAt) >= todayStart);
+    const filtered = broker === 'all' ? allTodayTrades : allTodayTrades.filter(t => t.broker === broker);
+
+    // Compute stats from filtered trades
+    const total   = filtered.length;
+    const wins    = filtered.filter(t => t.pnl != null && t.pnl > 0).length;
+    const losses  = filtered.filter(t => t.pnl != null && t.pnl < 0).length;
+    const pnl     = parseFloat(filtered.reduce((s,t) => s+(t.pnl||0), 0).toFixed(2));
+    const winRate = total > 0 ? Math.round((wins/total)*100) : 0;
+
+    // If filtering all brokers and no local trades yet, fall back to the server stats API
+    let statPnl=pnl, statWinRate=winRate, statTotal=total, statWins=wins, statLosses=losses;
+    if (broker === 'all' && total === 0) {
+      try {
+        const s = await API.get('/user/stats');
+        statPnl=s.pnl||0; statWinRate=s.winRate; statTotal=s.total; statWins=s.wins; statLosses=s.losses;
+      } catch{}
+    }
+
+    const pnlEl=document.getElementById('d-pnl');
+    const sign=statPnl>=0?'+$':'-$';
+    pnlEl.textContent=sign+Math.abs(statPnl).toFixed(2);
+    pnlEl.className='dcard-val'+(statPnl>=0?' c-green':' c-red');
+    document.getElementById('d-pnl-card').className='dcard '+(statPnl>=0?'glow-green':'glow-red');
+    const now=new Date(); document.getElementById('d-pnl-now').textContent=now.toLocaleString([],{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const wrEl=document.getElementById('d-wr');
+    wrEl.textContent=statWinRate+'%';
+    const isGood=statWinRate>=50;
+    wrEl.className='dcard-val'+(isGood?' c-green':' c-red');
+    document.getElementById('d-wr-card').className='dcard '+(isGood?'glow-cyan':'glow-red');
+    document.getElementById('d-trades').textContent=statTotal;
+    document.getElementById('d-wl').textContent=`${statWins} wins · ${statLosses} losses`;
+
+    // System row — filter by broker
+    const activeWH = broker==='all' ? this.webhooks.filter(w=>w.active).length
+      : this.webhooks.filter(w=>w.active && w.broker===broker).length;
+    const accts = broker==='all' ? this.accounts.length
+      : this.accounts.filter(a=>a.broker===broker).length;
+    const orders = broker==='all' ? this.orders.length
+      : this.orders.filter(o=>o.broker===broker).length;
+    document.getElementById('d-wh').textContent=activeWH;
+    document.getElementById('d-accts').textContent=accts;
+    document.getElementById('d-orders').textContent=orders;
+
+    // Recent trades table — filter by broker, then take last 10
+    const recentSrc = broker==='all' ? this.trades : this.trades.filter(t=>t.broker===broker);
+    const recent = recentSrc.slice(0,10);
+    const tbody=document.getElementById('dash-trades-tbody');
+    const brokerNote = broker==='all' ? '' : ` for ${broker==='topstepx'?'TopstepX':'Lucid Markets'}`;
+    if(!recent.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="10">No trades${brokerNote} yet.</td></tr>`;return;}
+    tbody.innerHTML=recent.map(t=>`<tr>
+      <td><strong>${t.symbol||'—'}</strong></td><td>${sideBadge(t.side)}</td><td>${t.qty??'—'}</td>
+      <td>${fmtPrice(t.entryPrice)}</td><td>${slFmt(t)}</td><td>${tpFmt(t)}</td>
+      <td><span style="font-size:11px;color:var(--accent)">${t.signal||'—'}</span></td>
+      <td>${brokerBadge(t.broker)}</td><td>${statusBadge(t.status)}</td>
+      <td style="color:var(--muted)">${fmtDate(t.openedAt)}</td>
+    </tr>`).join('');
+  },
+
+  async loadAccounts(silent=false) {
+    try{const d=await API.get('/accounts');this.accounts=d.accounts||[];if(!silent)this.renderAccounts();}
+    catch(err){if(!silent)toast('Failed to load accounts: '+err.message,'error');}
+  },
+  renderAccounts() {
+    const tbody=document.getElementById('accts-tbody');
+    if(!this.accounts.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No accounts connected. Click "+ Connect Account" to get started.</td></tr>';return;}
+    tbody.innerHTML=this.accounts.map(a=>`<tr>
+      <td><strong>${a.label}</strong></td><td>${brokerBadge(a.broker)}</td><td>${a.userName||'—'}</td>
+      <td><code>${a.accountId||'—'}</code></td>
+      <td>${a.sim?'<span class="badge bg-yellow">Demo</span>':'<span class="badge bg-green">Live</span>'}</td>
+      <td>${a.hasApiKey?'<span class="badge bg-green">✓ Set</span>':'<span class="badge bg-red">✗ Missing</span>'}</td>
+      <td><div class="btn-row">
+        <button class="btn-icon btn-xs" onclick="App.testAccount('${a.id}')" title="Test connection">🔍</button>
+        <button class="btn-icon btn-xs btn-danger" onclick="App.deleteAccount('${a.id}','${a.label}')" title="Remove">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+  },
+  _amFetchedAccounts: [],
+  _amFetchedBroker: '',
+  _amFetchedUser: '',
+  _amFetchedSim: false,
+  openAcctModal() {
+    document.getElementById('acct-err').style.display='none';
+    ['am-ts-user','am-ts-key','am-lm-user','am-lm-key','am-lm-secret'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('am-ts-sim').checked=false;
+    document.getElementById('am-broker').value='';
+    this._amFetchedAccounts=[];
+    this._amShow(1);
+    this.acctBrokerChange();
+    document.getElementById('acct-modal').classList.remove('hidden');
+  },
+  closeAcctModal(){document.getElementById('acct-modal').classList.add('hidden');},
+  acctBrokerChange(){const b=document.getElementById('am-broker').value;document.getElementById('am-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('am-lucid').classList.toggle('show',b==='lucid');},
+  _amShow(step){
+    document.getElementById('am-step1').style.display=step===1?'':'none';
+    document.getElementById('am-step2').style.display=step===2?'':'none';
+    document.getElementById('am-ind-1').style.background=step===1?'var(--accent)':'var(--bg3)';
+    document.getElementById('am-ind-1').style.color=step===1?'#021110':'var(--muted)';
+    document.getElementById('am-ind-2').style.background=step===2?'var(--accent)':'var(--bg3)';
+    document.getElementById('am-ind-2').style.color=step===2?'#021110':'var(--muted)';
+  },
+  acctBackToStep1(){this._amShow(1);document.getElementById('acct-err').style.display='none';},
+  async acctFetchAccounts() {
+    const errEl=document.getElementById('acct-err');errEl.style.display='none';
+    const broker=document.getElementById('am-broker').value;
+    if(!broker){errEl.textContent='Please select a broker first.';errEl.style.display='block';return;}
+    let payload={broker};
+    let userName='';
+    if(broker==='topstepx'){
+      userName=document.getElementById('am-ts-user').value.trim();
+      payload.userName=userName;
+      payload.apiKey=document.getElementById('am-ts-key').value.trim();
+      payload.sim=document.getElementById('am-ts-sim').checked;
+      if(!userName||!payload.apiKey){errEl.textContent='Enter your username and API key.';errEl.style.display='block';return;}
+    } else {
+      userName=document.getElementById('am-lm-user').value.trim();
+      payload.userName=userName;
+      payload.apiKey=document.getElementById('am-lm-key').value.trim();
+      payload.apiSecret=document.getElementById('am-lm-secret').value.trim();
+      if(!userName||!payload.apiKey){errEl.textContent='Enter your username and API key.';errEl.style.display='block';return;}
+    }
+    const btn=document.getElementById('am-fetch-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Fetching accounts…';
+    try{
+      const d=await API.post('/accounts/lookup',payload);
+      const accounts=d.accounts||[];
+      if(!accounts.length){errEl.textContent='No accounts found for these credentials. Check your username and API key.';errEl.style.display='block';return;}
+      // Store for use in saveAccount
+      this._amFetchedAccounts=accounts;
+      this._amFetchedBroker=broker;
+      this._amFetchedUser=userName;
+      this._amFetchedPayload={...payload};
+      // Populate dropdown
+      const sel=document.getElementById('am-acct-select');
+      sel.innerHTML='<option value="">— Choose an account —</option>'+
+        accounts.map(a=>`<option value="${a.id}">${a.name||a.id}${a.balance!=null?' — Balance: $'+Number(a.balance).toFixed(2):''}</option>`).join('');
+      // Fill broker/user labels
+      document.getElementById('am-s2-broker').textContent=broker==='topstepx'?'TopstepX':'Lucid Markets';
+      document.getElementById('am-s2-user').textContent=userName;
+      // Set up detail panel on selection change
+      sel.onchange=()=>{
+        const acct=this._amFetchedAccounts.find(a=>String(a.id)===sel.value);
+        const detail=document.getElementById('am-acct-detail');
+        if(acct&&detail){
+          detail.style.display='';
+          detail.innerHTML=`Account ID: <strong style="color:var(--text)">${acct.id}</strong>`+
+            (acct.balance!=null?` &nbsp;·&nbsp; Balance: <strong style="color:var(--green)">$${Number(acct.balance).toFixed(2)}</strong>`:'')+
+            (acct.name&&acct.name!==String(acct.id)?` &nbsp;·&nbsp; Name: <strong style="color:var(--text)">${acct.name}</strong>`:'');
+        } else if(detail){detail.style.display='none';}
+      };
+      document.getElementById('am-acct-detail').style.display='none';
+      this._amShow(2);
+    }catch(err){
+      errEl.textContent=err.message||'Failed to reach broker. Check your credentials.';
+      errEl.style.display='block';
+    }finally{
+      btn.disabled=false;btn.textContent='Find My Accounts →';
+    }
+  },
+  async saveAccount() {
+    const errEl=document.getElementById('acct-err');errEl.style.display='none';
+    const sel=document.getElementById('am-acct-select');
+    if(!sel.value){errEl.textContent='Please select an account from the list.';errEl.style.display='block';return;}
+    const acct=this._amFetchedAccounts.find(a=>String(a.id)===sel.value)||{};
+    const broker=this._amFetchedBroker;
+    const payload={
+      ...this._amFetchedPayload,
+      accountId: String(sel.value),
+      label: (acct.name||sel.value)+(this._amFetchedPayload.sim?' (Demo)':''),
+    };
+    const btn=document.getElementById('am-save-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+    try{
+      await API.post('/accounts',payload);
+      toast(`Account "${payload.label}" connected!`,'success');
+      this.closeAcctModal();
+      await this.loadAccounts();this.renderAccounts();
+    }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+    finally{btn.disabled=false;btn.textContent='Connect Account';}
+  },
+  async testAccount(id) {
+    toast('Testing connection…','info');
+    try{
+      const d=await API.get(`/accounts/${id}/test`);
+      const accts=d.accounts||[];
+      if(accts.length){
+        const ids=accts.map(a=>`${a.name||a.id} (ID: ${a.id})`).join(', ');
+        toast(`Connected! Accounts: ${ids}`,'success');
+      } else {
+        toast('Connected! (no active accounts returned)','success');
+      }
+    }
+    catch(err){toast('Test failed: '+err.message,'error');}
+  },
+  async deleteAccount(id,label) {
+    if(!await confirmDlg('Remove Account',`Remove "${label}"?`))return;
+    try{await API.del(`/accounts/${id}`);toast('Account removed.','success');await this.loadAccounts();this.renderAccounts();}
+    catch(err){toast('Delete failed: '+err.message,'error');}
+  },
+
+  // Build the correct webhook URL using the current page origin so it works
+  // regardless of what PUBLIC_BASE_URL is set to in the server .env file.
+  wUrl(w) {
+    if (w.token) return `${window.location.origin}/webhook/${w.token}`;
+    return w.webhookUrl || '';
+  },
+
+  async loadWebhooks(silent=false) {
+    try{
+      const d=await API.get('/webhooks');
+      // Rewrite webhookUrl using the browser's actual origin so the URL is
+      // always correct even when PUBLIC_BASE_URL in .env is a placeholder.
+      this.webhooks=(d.webhooks||[]).map(w=>({...w, webhookUrl: this.wUrl(w)}));
+      if(!silent)this.renderWebhooks();
+    }
+    catch(err){if(!silent)toast('Failed to load webhooks: '+err.message,'error');}
+  },
+  renderWebhooks() {
+    const tbody=document.getElementById('wh-tbody');
+    // ── Active webhooks panel
+    const panel=document.getElementById('wh-url-panel');
+    const urlList=document.getElementById('wh-url-list');
+    const activeWh=this.webhooks.filter(w=>w.active);
+    if(activeWh.length){
+      panel.style.display='';
+      urlList.innerHTML=activeWh.map(w=>`
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="min-width:150px">
+            <div style="font-size:13px;font-weight:600">${w.label}</div>
+            <div style="margin-top:3px;display:flex;gap:6px;align-items:center">${brokerBadge(w.broker)}<span class="badge bg-green" style="font-size:10px">● Active</span></div>
+          </div>
+          <div class="url-box" style="flex:1;min-width:0">
+            <span class="url-text" style="font-size:12px;color:var(--cyan)">${w.webhookUrl}</span>
+            <button class="btn-copy" style="padding:5px 14px;font-size:12px;background:var(--accent);color:#0a0c12;font-weight:700;border:none;border-radius:6px;white-space:nowrap" onclick="App.copyText('${w.webhookUrl}',this)">Copy URL</button>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      panel.style.display='none';
+    }
+    // ── Guide dropdown
+    const sel=document.getElementById('guide-wh-select');
+    if(sel){
+      const prev=sel.value;
+      sel.innerHTML='<option value="">— Select a webhook —</option>';
+      this.webhooks.forEach(w=>{
+        const opt=document.createElement('option');
+        opt.value=w.webhookUrl;
+        opt.textContent=`${w.label} (${w.broker}${w.active?'':' — paused'})`;
+        sel.appendChild(opt);
+      });
+      if(prev)sel.value=prev;
+      this.whGuideSelect();
+    }
+    // ── Table
+    if(!this.webhooks.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">No webhooks yet. Click "+ New Webhook" to create one.</td></tr>';return;}
+    tbody.innerHTML=this.webhooks.map(w=>{
+      const linkedAcct=(this.accounts||[]).find(a=>a.id===w.linkedAccountId);
+      const acctCell=linkedAcct
+        ?`<span style="font-size:12px">${linkedAcct.label||linkedAcct.userName} <span style="color:var(--muted)">(${linkedAcct.broker})</span></span>`
+        :`<span style="color:var(--muted);font-size:12px">${w.broker||'—'}</span>`;
+      return `<tr>
+      <td><strong>${w.label}</strong></td><td>${acctCell}</td>
+      <td>${w.active?'<span class="badge bg-green">● Active</span>':'<span class="badge bg-red">○ Paused</span>'}</td>
+      <td style="color:var(--muted);font-size:12px">${w.lastTriggered?fmtDate(w.lastTriggered):'Never'}</td>
+      <td>${w.credentialsConfigured?'<span class="badge bg-green">✓ Linked</span>':'<span class="badge bg-red">✗ None</span>'}</td>
+      <td><div class="url-box" style="max-width:280px"><span class="url-text" title="${w.webhookUrl}">${w.webhookUrl}</span><button class="btn-copy" onclick="App.copyText('${w.webhookUrl}',this)">Copy</button></div></td>
+      <td><div class="btn-row">
+        <button class="btn-icon btn-xs" onclick="App.openWHModal('${w.id}')" title="Edit">✏️</button>
+        <button class="btn-icon btn-xs" onclick="App.toggleWH('${w.id}',${!w.active})" title="${w.active?'Pause':'Activate'}">${w.active?'⏸':'▶️'}</button>
+        <button class="btn-icon btn-xs btn-danger" onclick="App.deleteWH('${w.id}','${w.label}')" title="Delete">🗑️</button>
+      </div></td>
+    </tr>`;
+    }).join('');
+  },
+  whGuideSelect(){
+    const sel=document.getElementById('guide-wh-select');
+    const row=document.getElementById('guide-url-row');
+    const txt=document.getElementById('guide-url-text');
+    if(!sel||!row||!txt)return;
+    const url=sel.value;
+    if(url){txt.textContent=url;row.style.display='';}
+    else{row.style.display='none';}
+  },
+  openWHModal(id) {
+    const errEl=document.getElementById('wh-err');errEl.style.display='none';
+    // Populate account dropdown from connected accounts
+    const sel=document.getElementById('wm-account');
+    sel.innerHTML='<option value="">— Select a connected account —</option>';
+    (this.accounts||[]).forEach(a=>{
+      const opt=document.createElement('option');
+      opt.value=a.id;
+      opt.textContent=`${a.label||a.userName} — ${a.broker}${a.sim?' (Demo)':''}`;
+      sel.appendChild(opt);
+    });
+    if(id){
+      const w=this.webhooks.find(x=>x.id===id);if(!w)return;
+      document.getElementById('wh-modal-title').textContent='Edit Webhook';
+      document.getElementById('wm-save-btn').textContent='Save Changes';
+      document.getElementById('wm-id').value=w.id;
+      document.getElementById('wm-label').value=w.label;
+      if(w.linkedAccountId)sel.value=w.linkedAccountId;
+    } else {
+      document.getElementById('wh-modal-title').textContent='New Webhook';
+      document.getElementById('wm-save-btn').textContent='Create';
+      document.getElementById('wm-id').value='';
+      document.getElementById('wm-label').value='';
+      sel.value='';
+    }
+    document.getElementById('wh-modal').classList.remove('hidden');
+  },
+  closeWHModal(){document.getElementById('wh-modal').classList.add('hidden');},
+  async saveWebhook() {
+    const errEl=document.getElementById('wh-err');errEl.style.display='none';
+    const id=document.getElementById('wm-id').value;
+    const label=document.getElementById('wm-label').value.trim();
+    const linkedAccountId=document.getElementById('wm-account').value;
+    if(!label){errEl.textContent='Label is required.';errEl.style.display='block';return;}
+    if(!linkedAccountId){errEl.textContent='Please select a connected account.';errEl.style.display='block';return;}
+    const btn=document.getElementById('wm-save-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+    try{
+      if(id){await API.put(`/webhooks/${id}`,{label,linkedAccountId});toast('Webhook updated!','success');}
+      else{
+        const res=await API.post('/webhooks',{label,linkedAccountId});
+        const url=this.wUrl(res.webhook);
+        toast('Webhook created! URL copied to clipboard.','success');
+        if(url)navigator.clipboard.writeText(url).catch(()=>{});
+      }
+      this.closeWHModal();await this.loadWebhooks();this.renderWebhooks();
+    }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+    finally{btn.disabled=false;btn.textContent=id?'Save Changes':'Create';}
+  },
+  async toggleWH(id,active){try{await API.put(`/webhooks/${id}`,{active});toast(`Webhook ${active?'activated':'paused'}.`,'success');await this.loadWebhooks();this.renderWebhooks();}catch(err){toast('Failed: '+err.message,'error');}},
+  async deleteWH(id,label){if(!await confirmDlg('Delete Webhook',`Delete "${label}"? Cannot be undone.`))return;try{await API.del(`/webhooks/${id}`);toast('Deleted.','success');await this.loadWebhooks();this.renderWebhooks();}catch(err){toast('Failed: '+err.message,'error');}},
+
+  tvTab(t){['create','setup','format'].forEach(id=>{document.getElementById(`tvt-${id}`).classList.toggle('active',id===t);document.getElementById(`tvp-${id}`).classList.toggle('active',id===t);});},
+
+  // ──── INDICATORS ───────────────────────────────────────────────────────────────────────────────────────────
+  async loadIndicators(silent=false) {
+    try{const d=await API.get('/indicators');this.indicators=d.indicators||[];if(!silent)this.renderIndicators();}
+    catch(err){if(!silent)toast('Failed to load indicators: '+err.message,'error');}
+  },
+
+  renderIndicators() {
+    const grid=document.getElementById('ind-grid');
+    const empty=document.getElementById('ind-empty');
+    if(!grid)return;
+    if(!this.indicators.length){grid.style.display='none';empty.style.display='';return;}
+    empty.style.display='none';grid.style.display='';
+    grid.innerHTML=this.indicators.map(ind=>{
+      const hasTemplate=!!(ind.alertTemplate);
+      const hasSource=!!(ind.sourceCode);
+      return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div>
+            <div style="font-size:15px;font-weight:700">${ind.name}</div>
+            ${ind.description?`<div style="font-size:12px;color:var(--muted);margin-top:3px">${ind.description}</div>`:''}
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            <button class="btn-icon btn-xs" onclick="App.openIndicatorModal('${ind.id}')" title="Edit">✏️</button>
+            <button class="btn-icon btn-xs btn-danger" onclick="App.deleteIndicator('${ind.id}','${ind.name.replace(/'/g,"\'")}')" title="Delete">🗑️</button>
+          </div>
+        </div>
+        ${ind.ticker?`<div style="font-size:12px"><span style="color:var(--muted)">Ticker:</span> <code>${ind.ticker}</code></div>`:''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${hasTemplate?'<span class="badge bg-green" style="font-size:11px">✓ Alert Template</span>':'<span class="badge bg-red" style="font-size:11px">✗ No Template</span>'}
+          ${hasSource?'<span class="badge" style="background:rgba(124,111,245,.2);color:var(--purple);font-size:11px">📜 Pine Script</span>':''}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn-primary btn-sm" style="flex:1" onclick="App.openIndicatorUseModal('${ind.id}')">⚡ Create Webhook</button>
+          ${hasSource?`<button class="btn-outline btn-sm" onclick="App.viewPineScript('${ind.id}')">📜 View Script</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  openIndicatorModal(id) {
+    const errEl=document.getElementById('ind-err');errEl.style.display='none';
+    ['ind-name','ind-desc','ind-ticker','ind-template','ind-source'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+    document.getElementById('ind-id').value='';
+    if(id){
+      const ind=this.indicators.find(x=>x.id===id);if(!ind)return;
+      document.getElementById('ind-modal-title').textContent='Edit Indicator';
+      document.getElementById('ind-save-btn').textContent='Save Changes';
+      document.getElementById('ind-id').value=ind.id;
+      document.getElementById('ind-name').value=ind.name||'';
+      document.getElementById('ind-desc').value=ind.description||'';
+      document.getElementById('ind-ticker').value=ind.ticker||'';
+      document.getElementById('ind-template').value=typeof ind.alertTemplate==='object'?JSON.stringify(ind.alertTemplate,null,2):(ind.alertTemplate||'');
+      document.getElementById('ind-source').value=ind.sourceCode||'';
+    } else {
+      document.getElementById('ind-modal-title').textContent='Add Indicator';
+      document.getElementById('ind-save-btn').textContent='Save Indicator';
+    }
+    document.getElementById('ind-modal').classList.remove('hidden');
+  },
+  closeIndicatorModal(){document.getElementById('ind-modal').classList.add('hidden');},
+
+  async saveIndicator() {
+    const errEl=document.getElementById('ind-err');errEl.style.display='none';
+    const id=document.getElementById('ind-id').value;
+    const name=document.getElementById('ind-name').value.trim();
+    if(!name){errEl.textContent='Indicator name is required.';errEl.style.display='block';return;}
+    const raw=document.getElementById('ind-template').value.trim();
+    let alertTemplate=raw||null;
+    if(raw){try{alertTemplate=JSON.parse(raw);}catch(e){/* keep as string */}}
+    const payload={
+      name,
+      description: document.getElementById('ind-desc').value.trim(),
+      ticker:      document.getElementById('ind-ticker').value.trim(),
+      alertTemplate,
+      sourceCode:  document.getElementById('ind-source').value,
+    };
+    const btn=document.getElementById('ind-save-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+    try{
+      if(id){await API.put(`/indicators/${id}`,payload);toast('Indicator updated!','success');}
+      else{await API.post('/indicators',payload);toast('Indicator saved!','success');}
+      this.closeIndicatorModal();await this.loadIndicators();this.renderIndicators();
+    }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+    finally{btn.disabled=false;btn.textContent=id?'Save Changes':'Save Indicator';}
+  },
+
+  async deleteIndicator(id,name){
+    if(!await confirmDlg('Delete Indicator',`Delete "${name}"? This cannot be undone.`))return;
+    try{await API.del(`/indicators/${id}`);toast('Indicator deleted.','success');await this.loadIndicators();this.renderIndicators();}
+    catch(err){toast('Failed: '+err.message,'error');}
+  },
+
+  viewPineScript(id){
+    const ind=this.indicators.find(x=>x.id===id);if(!ind)return;
+    const w=window.open('','_blank','width=800,height=600');
+    w.document.write(`<!DOCTYPE html><html><head><title>${ind.name} — Pine Script</title>
+    <style>body{background:#0e1117;color:#c9d1d9;font-family:'Courier New',monospace;font-size:13px;padding:20px;white-space:pre-wrap;line-height:1.6}</style></head>
+    <body>${ind.sourceCode.replace(/</g,'&lt;')}</body></html>`);
+    w.document.close();
+  },
+
+  openIndicatorUseModal(id){
+    const ind=this.indicators.find(x=>x.id===id);if(!ind)return;
+    const errEl=document.getElementById('ind-use-err');errEl.style.display='none';
+    document.getElementById('ind-use-title').textContent=`Webhook: ${ind.name}`;
+    document.getElementById('ind-use-ind-id').value=id;
+    document.getElementById('ind-use-label').value=ind.name;
+    // Populate account dropdown
+    const sel=document.getElementById('ind-use-account');
+    sel.innerHTML='<option value="">— Select a connected account —</option>';
+    (this.accounts||[]).forEach(a=>{
+      const opt=document.createElement('option');
+      opt.value=a.id;
+      opt.textContent=`${a.label||a.userName} — ${a.broker}${a.sim?' (Demo)':''}`;
+      sel.appendChild(opt);
+    });
+    // Show alert template if present
+    const tmplRow=document.getElementById('ind-use-template-row');
+    const tmplEl=document.getElementById('ind-use-tmpl');
+    if(ind.alertTemplate){
+      const tmplStr=typeof ind.alertTemplate==='object'?JSON.stringify(ind.alertTemplate,null,2):ind.alertTemplate;
+      tmplEl.textContent=tmplStr;
+      tmplRow.style.display='';
+    } else {
+      tmplRow.style.display='none';
+    }
+    document.getElementById('ind-use-modal').classList.remove('hidden');
+  },
+  closeIndicatorUseModal(){document.getElementById('ind-use-modal').classList.add('hidden');},
+
+  async saveIndicatorWebhook(){
+    const errEl=document.getElementById('ind-use-err');errEl.style.display='none';
+    const label=document.getElementById('ind-use-label').value.trim();
+    const linkedAccountId=document.getElementById('ind-use-account').value;
+    if(!label){errEl.textContent='Label is required.';errEl.style.display='block';return;}
+    if(!linkedAccountId){errEl.textContent='Please select a connected account.';errEl.style.display='block';return;}
+    const btn=document.getElementById('ind-use-save-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+    try{
+      const res=await API.post('/webhooks',{label,linkedAccountId});
+      const url=this.wUrl(res.webhook);
+      if(url)navigator.clipboard.writeText(url).catch(()=>{});
+      this.closeIndicatorUseModal();
+      // Show step-by-step guide in Webhooks tab with this webhook pre-selected
+      await this.loadWebhooks();
+      if(url){
+        const sel=document.getElementById('guide-wh-select');
+        if(sel){sel.value=url;this.whGuideSelect();}
+      }
+      toast(`Webhook created! URL copied. ${url?'Now paste it into TradingView.':''}`,'success');
+      this.nav('webhooks');
+    }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+    finally{btn.disabled=false;btn.textContent='Create Webhook';}
+  },
+  tvBrokerChange(){const b=document.getElementById('tv-broker').value;document.getElementById('tv-topstepx').classList.toggle('show',b==='topstepx');document.getElementById('tv-lucid').classList.toggle('show',b==='lucid');},
+  async tvCreateWebhook() {
+    const errEl=document.getElementById('tv-create-err');errEl.style.display='none';
+    const label=document.getElementById('tv-label').value.trim();
+    const broker=document.getElementById('tv-broker').value;
+    if(!label){errEl.textContent='Label required.';errEl.style.display='block';return;}
+    if(!broker){errEl.textContent='Select a broker.';errEl.style.display='block';return;}
+    let bc={};
+    if(broker==='topstepx'){
+      bc.userName=document.getElementById('tv-ts-user').value.trim();
+      bc.apiKey=document.getElementById('tv-ts-key').value.trim();
+      const a=document.getElementById('tv-ts-acct').value;if(a)bc.accountId=parseInt(a,10);
+      bc.sim=document.getElementById('tv-ts-sim').checked;
+    } else {
+      bc.apiKey=document.getElementById('tv-lm-key').value.trim();
+      bc.apiSecret=document.getElementById('tv-lm-secret').value;
+      bc.accountId=document.getElementById('tv-lm-acct').value.trim();
+    }
+    const btn=document.getElementById('tv-create-btn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Creating…';
+    try{
+      const res=await API.post('/webhooks',{label,broker,brokerConfig:bc});
+      const url=this.wUrl(res.webhook);
+      document.getElementById('tv-url-text').textContent=url;
+      document.getElementById('tv-json-preview').textContent=`{\n  "action":    "{{strategy.order.action}}",\n  "ticker":    "{{ticker}}",\n  "qty":       {{strategy.order.contracts}},\n  "price":     {{close}},\n  "orderType": "market",\n  "sl":        null,\n  "tp":        null,\n  "slTicks":   10,\n  "tpTicks":   20,\n  "signal":    "{{strategy.order.comment}}",\n  "comment":   "${label}"\n}`;
+      document.getElementById('tv-result').style.display='block';
+      navigator.clipboard.writeText(url).catch(()=>{});
+      toast('Webhook created! URL copied to clipboard.','success');
+      await this.loadWebhooks(true);
+    }catch(err){errEl.textContent=err.message;errEl.style.display='block';}
+    finally{btn.disabled=false;btn.textContent='Create Webhook & Generate Alert';}
+  },
+  copyTemplateJson(){
+    const t=`{\n  "action":    "{{strategy.order.action}}",\n  "ticker":    "{{ticker}}",\n  "qty":       {{strategy.order.contracts}},\n  "price":     {{close}},\n  "orderType": "market",\n  "sl":        null,\n  "tp":        null,\n  "slTicks":   10,\n  "tpTicks":   20,\n  "signal":    "{{strategy.order.comment}}",\n  "comment":   "my_strategy"\n}`;
+    navigator.clipboard.writeText(t).then(()=>toast('Template copied!','success')).catch(()=>toast('Copy failed','error'));
+  },
+
+  // ── Trade Settings ──────────────────────────────────────────────────────────
+  async loadTradeSettings() {
+    try {
+      const d = await API.get('/user/trade-settings');
+      const s = d.tradeSettings || {};
+      const setVal = (id, v) => { const el = document.getElementById(id); if(el) el.value = (v != null ? v : ''); };
+      setVal('ts-daily-profit',      s.dailyProfitTarget);
+      setVal('ts-daily-loss',        s.dailyLossLimit);
+      setVal('ts-tp-ticks',          s.defaultTpTicks);
+      setVal('ts-sl-ticks',          s.defaultSlTicks);
+      setVal('ts-max-trades',        s.maxDailyTrades);
+      setVal('ts-default-contracts', s.defaultContracts);
+    } catch(err) {
+      toast('Could not load trade settings: ' + err.message, 'error');
+    }
+  },
+  async saveTradeSettings() {
+    const btn = document.getElementById('ts-save-btn');
+    const status = document.getElementById('ts-save-status');
+    const getNum = (id) => { const v = document.getElementById(id)?.value; return (v === '' || v == null) ? null : parseFloat(v); };
+    const payload = {
+      dailyProfitTarget: getNum('ts-daily-profit'),
+      dailyLossLimit:    getNum('ts-daily-loss'),
+      defaultTpTicks:    getNum('ts-tp-ticks'),
+      defaultSlTicks:    getNum('ts-sl-ticks'),
+      maxDailyTrades:    getNum('ts-max-trades'),
+      defaultContracts:  getNum('ts-default-contracts'),
+    };
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Saving…';
+    status.style.display = 'none';
+    try {
+      await API.put('/user/trade-settings', payload);
+      status.style.cssText = 'display:flex;align-items:center;gap:6px;color:var(--green);font-size:13px';
+      status.innerHTML = '✓ Settings saved';
+      setTimeout(() => { status.style.display = 'none'; }, 3000);
+      toast('Trade settings saved.', 'success');
+    } catch(err) {
+      status.style.cssText = 'display:flex;align-items:center;gap:6px;color:var(--red);font-size:13px';
+      status.innerHTML = '✗ ' + err.message;
+      toast('Save failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Settings';
+    }
+  },
+
+  _atAll:[],
+  async loadActiveTrades() {
+    await this.loadTradeLog(true);
+    this._atAll=[...this.trades];
+    this.renderActiveTrades();
+  },
+  filterActiveTrades(){
+    this.renderActiveTrades();
+  },
+  renderActiveTrades() {
+    const filter=document.getElementById('at-filter')?.value||'all';
+    const open=this._atAll.filter(t=>t.status==='open'&&(filter==='all'||t.broker===filter));
+    const closed=this._atAll.filter(t=>t.status==='closed'||(t.closedAt&&t.status!=='open')).slice(0,8);
+    // update count badge
+    const badge=document.getElementById('at-count');
+    if(badge){badge.textContent=open.length;badge.style.display=open.length?'inline':'none';}
+    // summary
+    const longs=open.filter(t=>['buy','long'].includes((t.side||'').toLowerCase())).length;
+    const shorts=open.length-longs;
+    const unreal=open.reduce((s,t)=>s+(t.pnl||0),0);
+    document.getElementById('at-total').textContent=open.length;
+    document.getElementById('at-long').textContent=longs;
+    document.getElementById('at-short').textContent=shorts;
+    const urEl=document.getElementById('at-unrealized');
+    if(open.length){
+      urEl.textContent=(unreal>=0?'+$':'-$')+Math.abs(unreal).toFixed(2);
+      urEl.className='sys-val '+(unreal>=0?'c-green':'c-red');
+    } else {
+      urEl.textContent='—'; urEl.className='sys-val';
+    }
+    // open positions table
+    const tbody=document.getElementById('at-tbody');
+    if(!open.length){
+      tbody.innerHTML=`<tr><td colspan="11"><div class="at-empty"><div class="at-empty-icon">🏁</div><div class="at-empty-title">No open positions</div><div class="at-empty-sub">Positions will appear here as soon as a webhook fires an order.</div></div></td></tr>`;
+    } else {
+      tbody.innerHTML=open.map(t=>`<tr class="at-row-open">
+        <td><span style="display:flex;align-items:center;gap:6px;font-size:11px"><span class="live-dot" style="background:var(--green)"></span> Open</span></td>
+        <td><strong>${t.symbol||'—'}</strong></td>
+        <td>${sideBadge(t.side)}</td>
+        <td>${t.qty??'—'}</td>
+        <td style="font-weight:600">${fmtPrice(t.entryPrice)}</td>
+        <td>${slFmt(t)}</td><td>${tpFmt(t)}</td>
+        <td><span style="font-size:11px;color:var(--accent)">${t.signal||'—'}</span></td>
+        <td>${brokerBadge(t.broker)}</td>
+        <td style="color:var(--muted);font-size:12px">${fmtDate(t.openedAt)}</td>
+        <td><button class="btn-danger btn-xs" onclick="App.closeTradePrompt('${t.id}')">Close</button></td>
+      </tr>`).join('');
+    }
+    // recently closed
+    const ctbody=document.getElementById('at-closed-tbody');
+    if(!closed.length){
+      ctbody.innerHTML='<tr class="empty-row"><td colspan="8">No recently closed trades.</td></tr>';
+    } else {
+      ctbody.innerHTML=closed.map(t=>`<tr>
+        <td><strong>${t.symbol||'—'}</strong></td><td>${sideBadge(t.side)}</td>
+        <td>${t.qty??'—'}</td><td>${fmtPrice(t.entryPrice)}</td>
+        <td>${fmtPrice(t.exitPrice)}</td><td>${fmtPnl(t.pnl)}</td>
+        <td><span style="font-size:11px;color:var(--accent)">${t.signal||'—'}</span></td>
+        <td style="color:var(--muted);font-size:12px">${fmtDate(t.closedAt)}</td>
+      </tr>`).join('');
+    }
+  },
+  async closeTradePrompt(id){
+    if(!await confirmDlg('Close Trade','Mark this trade as closed?'))return;
+    try{
+      await API.put(`/tradelog/${id}`,{status:'closed',closedAt:new Date().toISOString()});
+      toast('Trade marked closed.','success');
+      await this.loadActiveTrades();
+    }catch(err){toast('Failed: '+err.message,'error');}
+  },
+
+  async loadTradeLog(silent=false) {
+    try{const d=await API.get('/tradelog?limit=500');this.trades=d.trades||[];if(!silent){this.renderTradeLog();this.loadPnlSummary();}}
+    catch(err){if(!silent)toast('Failed to load trade log: '+err.message,'error');}
+  },
+  async loadPnlSummary() {
+    try {
+      const d=await API.get('/tradelog/pnl-summary');
+      const fmt=v=>{const a=Math.abs(v).toFixed(2);return v>=0?'+$'+a:'-$'+a;};
+      const setCard=(id,cardId,val)=>{
+        const el=document.getElementById(id);if(!el)return;
+        el.textContent=fmt(val);
+        el.className='dcard-val '+(val>=0?'c-green':'c-red');
+        const card=document.getElementById(cardId);if(!card)return;
+        card.className='dcard '+(val>=0?card.className.includes('glow-green')?'dcard glow-green':'dcard glow-cyan':'dcard glow-red');
+      };
+      setCard('tl-total-pnl','tl-total-card',d.allPnl);
+      setCard('tl-month-pnl','tl-month-card',d.monthPnl);
+      setCard('tl-today-pnl','tl-today-card',d.todayPnl);
+      const wkEl=document.getElementById('tl-week-pnl');
+      if(wkEl){wkEl.textContent=fmt(d.weekPnl);wkEl.style.color=d.weekPnl>=0?'var(--green)':'var(--red)';}
+      const tbody=document.getElementById('tl-daily-tbody');if(!tbody)return;
+      if(!d.dailyHistory||!d.dailyHistory.length){tbody.innerHTML='<tr class="empty-row"><td colspan="6">No trade history yet — trades are tracked automatically as they close.</td></tr>';return;}
+      tbody.innerHTML=d.dailyHistory.map(day=>{
+        const wr=day.trades>0?Math.round(day.wins/day.trades*100):0;
+        const pnlCls=day.pnl>=0?'pnl-pos':'pnl-neg';
+        const dateStr=new Date(day.date+'T12:00:00').toLocaleDateString([],{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+        return `<tr>
+          <td style="font-weight:500">${dateStr}</td>
+          <td><span class="${pnlCls}">${day.pnl>=0?'+$':'-$'}${Math.abs(day.pnl).toFixed(2)}</span></td>
+          <td>${day.trades}</td>
+          <td style="color:var(--green)">${day.wins}</td>
+          <td style="color:var(--red)">${day.losses}</td>
+          <td><span class="${wr>=50?'c-green':wr>=33?'c-yellow':'c-red'}">${wr}%</span></td>
+        </tr>`;
+      }).join('');
+    }catch(err){/* silent */}
+  },
+  renderTradeLog() {
+    const tbody=document.getElementById('tl-tbody');
+    if(!this.trades.length){tbody.innerHTML='<tr class="empty-row"><td colspan="14">No trades recorded yet. Trades appear here when webhooks execute orders.</td></tr>';return;}
+    tbody.innerHTML=this.trades.map((t,i)=>`<tr>
+      <td style="color:var(--muted)">${i+1}</td><td><strong>${t.symbol||'—'}</strong></td><td>${sideBadge(t.side)}</td>
+      <td>${t.qty??'—'}</td><td>${fmtPrice(t.entryPrice)}</td>
+      <td>${slFmt(t)}</td><td>${tpFmt(t)}</td>
+      <td style="font-size:11px;color:var(--muted)">${t.orderType||'market'}</td>
+      <td><span style="font-size:11px;color:var(--accent)">${t.signal||'—'}</span></td>
+      <td>${brokerBadge(t.broker)}</td><td>${statusBadge(t.status)}</td>
+      <td>${fmtPnl(t.pnl)}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDate(t.openedAt)}</td>
+      <td style="color:var(--muted);font-size:12px">${t.closedAt?fmtDate(t.closedAt):'—'}</td>
+    </tr>`).join('');
+  },
+
+  async loadOrders(silent=false) {
+    try{const d=await API.get('/user/orders?limit=200');this.orders=d.orders||[];if(!silent)this.renderOrders();}
+    catch(err){if(!silent)toast('Failed to load orders: '+err.message,'error');}
+  },
+  renderOrders() {
+    const tbody=document.getElementById('ord-tbody');
+    if(!this.orders.length){tbody.innerHTML='<tr class="empty-row"><td colspan="12">No orders yet.</td></tr>';return;}
+    tbody.innerHTML=this.orders.map((o,i)=>`<tr>
+      <td style="color:var(--muted)">${i+1}</td><td><strong>${o.symbol||'—'}</strong></td><td>${sideBadge(o.side)}</td>
+      <td>${o.qty??'—'}</td><td>${fmtPrice(o.price)}</td>
+      <td>${slFmt(o)}</td><td>${tpFmt(o)}</td>
+      <td style="font-size:11px;color:var(--muted)">${o.orderType||'—'}</td>
+      <td><span style="font-size:11px;color:var(--accent)">${o.signal||'—'}</span></td>
+      <td>${brokerBadge(o.broker)}</td><td>${statusBadge(o.status)}</td>
+      <td style="color:var(--muted);font-size:12px">${fmtDate(o.createdAt)}</td>
+    </tr>`).join('');
+  },
+
+  // ── ORDER FLOW AI ─────────────────────────────────────────────────────────
+  async loadOrderFlow() {
+    try {
+      const [bots, sigs] = await Promise.all([
+        API.get('/autotrader/bots'),
+        API.get('/autotrader/signals?limit=80')
+      ]);
+      this._renderBotGrid(bots.bots||[]);
+      this._renderSignalLog(sigs.signals||[]);
+    } catch(e) { toast('Failed to load Order Flow data','error'); }
+    this.calcRR(); // refresh calculator
+  },
+  _renderBotGrid(bots) {
+    const g = document.getElementById('of-bots-grid');
+    if(!bots.length) {
+      g.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">No bots yet — click <strong style="color:var(--accent)">＋ New Bot</strong> to get started.</div>';
+      return;
+    }
+    g.innerHTML = bots.map(b=>{
+      const running = b.status==='running';
+      const s = b.stats || {};
+      const wr = s.winRate ?? (s.trades>0 ? Math.round(s.wins/s.trades*100) : 0);
+      const pnl = s.pnl ?? 0;
+      const regime = b.metrics?.regime || '—';
+      const regimeColor = regime==='normal'?'var(--green)':regime==='choppy'?'var(--accent)':'var(--red)';
+      const dot = running
+        ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 1.4s infinite;margin-right:6px"></span>'
+        : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px"></span>';
+      const rr = b.riskRewardRatio || 2;
+      return `<div class="card" style="padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="font-weight:700;font-size:14px">${b.name}</div>
+          <div style="font-size:12px">${dot}${running?'<span style="color:var(--green)">Running</span>':'<span style="color:var(--muted)">Stopped</span>'}</div>
+        </div>
+        <!-- Quick stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;text-align:center">
+          <div style="background:var(--bg3);border-radius:6px;padding:8px 4px">
+            <div style="font-size:10px;color:var(--muted)">Trades</div>
+            <div style="font-weight:700;font-size:15px">${s.trades||0}</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:6px;padding:8px 4px">
+            <div style="font-size:10px;color:var(--muted)">Win Rate</div>
+            <div style="font-weight:700;font-size:15px;color:${wr>=50?'var(--green)':wr>=40?'var(--accent)':'var(--red)'}">${wr}%</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:6px;padding:8px 4px">
+            <div style="font-size:10px;color:var(--muted)">P&L Ticks</div>
+            <div style="font-weight:700;font-size:15px;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${pnl}</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:6px;padding:8px 4px">
+            <div style="font-size:10px;color:var(--muted)">Regime</div>
+            <div style="font-weight:700;font-size:12px;color:${regimeColor}">${regime}</div>
+          </div>
+        </div>
+        <!-- Config row -->
+        <div style="font-size:12px;color:var(--muted);line-height:1.9">
+          <div style="display:flex;justify-content:space-between">
+            <span>Symbol: <strong style="color:var(--text)">${b.symbol||'—'}</strong></span>
+            <span>Broker: <strong style="color:var(--text)">${b.broker||'—'}</strong></span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span>SL: <span style="color:var(--red)">${b.slTicks||'—'}t</span> · TP: <span style="color:var(--green)">${b.tpTicks||'—'}t</span></span>
+            <span>R:R <span style="color:var(--accent);font-weight:700">${rr}:1</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span>Conf ≥ <span style="color:var(--accent)">${b.minConfidence||65}%</span></span>
+            <span>Mode: <span style="color:${b.simulationMode?'var(--cyan)':'var(--orange)'}">${b.simulationMode?'Sim':'Live'}</span></span>
+          </div>
+          ${s.consecLosses>=2?`<div style="color:var(--red);font-size:11px">⚠ ${s.consecLosses} consecutive losses</div>`:''}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          ${running
+            ? `<button class="btn-danger btn-sm" onclick="App.stopBot('${b.id}')">■ Stop</button>`
+            : `<button class="btn-primary btn-sm" onclick="App.startBot('${b.id}')">▶ Start</button>`}
+          <button class="btn-outline btn-sm" onclick="App.editBot('${b.id}')">Edit</button>
+          <button class="btn-outline btn-sm" style="color:var(--red)" onclick="App.deleteBot('${b.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  },
+  _renderSignalLog(sigs) {
+    const tb = document.getElementById('of-signals-tbody');
+    if(!sigs.length) { tb.innerHTML='<tr><td colspan="12" style="color:var(--muted);text-align:center;padding:24px">No signals yet — start a bot to begin</td></tr>'; return; }
+    const sideColor = s => s==='BUY'?'var(--green)':s==='SELL'?'var(--red)':'var(--muted)';
+    const regimeColor = r => r==='normal'?'var(--green)':r==='choppy'?'var(--accent)':'var(--red)';
+    const resultBadge = st => {
+      if(st==='win') return '<span style="color:var(--green);font-weight:700">✓ WIN</span>';
+      if(st==='loss') return '<span style="color:var(--red);font-weight:700">✗ LOSS</span>';
+      if(st==='blocked') return '<span style="color:var(--accent)">⊘ blocked</span>';
+      if(st==='failed') return '<span style="color:var(--red)">✗ failed</span>';
+      return `<span style="color:var(--muted)">${st||'—'}</span>`;
+    };
+    tb.innerHTML = sigs.map(s=> {
+      const m = s.metrics || {};
+      const o = s.order || {};
+      const rr = o.riskRewardRatio || '—';
+      return `<tr>
+        <td style="font-size:11px;white-space:nowrap">${new Date(s.timestamp).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'})}</td>
+        <td style="font-size:11px;color:var(--muted)">${(s.botId||'').slice(0,8)}…</td>
+        <td style="color:var(--accent);font-weight:700">${s.symbol||'—'}</td>
+        <td style="color:${sideColor(s.side)};font-weight:700">${s.side||'—'}</td>
+        <td><span style="color:${s.confidence>=70?'var(--green)':s.confidence>=55?'var(--accent)':'var(--muted)'}">${s.confidence||0}%</span></td>
+        <td><span style="color:${regimeColor(m.regime)};font-size:11px">${m.regime||'—'}</span></td>
+        <td style="font-size:11px;color:${m.trend==='BUY'?'var(--green)':m.trend==='SELL'?'var(--red)':'var(--muted)'}">${m.trend||'—'}</td>
+        <td style="color:var(--red)">${o.slTicks||'—'}t</td>
+        <td style="color:var(--green)">${o.tpTicks||'—'}t</td>
+        <td style="color:var(--accent)">${rr}:1</td>
+        <td>${resultBadge(s.status)}</td>
+        <td style="font-size:11px;color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${(s.reasons||[]).join(', ')}">${(s.reasons||[]).join(', ')||s.blockedReason||'—'}</td>
+      </tr>`;
+    }).join('');
+  },
+  ofUpdateTP() {
+    const sl = parseFloat(document.getElementById('of-sl').value) || 10;
+    const rr = parseFloat(document.getElementById('of-rr').value) || 2;
+    document.getElementById('of-tp').value = Math.round(sl * rr);
+  },
+  openBotModal(bot=null) {
+    this.ofUpdateTP();
+    document.getElementById('of-bot-err').textContent='';
+    document.getElementById('of-bot-id').value=bot?bot.id:'';
+    document.getElementById('of-modal-title').textContent=bot?'Edit Bot':'New Order Flow Bot';
+    document.getElementById('of-name').value=bot?bot.name:'';
+    document.getElementById('of-symbol').value=bot?bot.symbol:'';
+    document.getElementById('of-qty').value=bot?bot.qty:1;
+    document.getElementById('of-broker').value=bot?bot.broker:'';
+    document.getElementById('of-conf').value=bot?bot.minConfidence:65;
+    document.getElementById('of-conf-val').textContent=bot?bot.minConfidence:65;
+    document.getElementById('of-sl').value=bot?bot.slTicks:10;
+    document.getElementById('of-rr').value=bot?String(bot.riskRewardRatio||2):'2';
+    document.getElementById('of-maxloss').value=bot?bot.maxDailyLoss:500;
+    document.getElementById('of-maxtr').value=bot?bot.maxDailyTrades:10;
+    document.getElementById('of-maxcl').value=bot?bot.maxConsecLosses:3;
+    document.getElementById('of-delta').value=bot?bot.deltaThreshold:150;
+    document.getElementById('of-imb').value=bot?bot.imbalanceThreshold:0.62;
+    document.getElementById('of-cool').value=bot?bot.cooldownBars:3;
+    document.getElementById('of-trendp').value=bot?bot.trendPeriod:10;
+    document.getElementById('of-atrp').value=bot?bot.atrPeriod:10;
+    document.getElementById('of-minatr').value=bot?bot.minAtrTicks:3;
+    document.getElementById('of-maxatr').value=bot?bot.maxAtrTicks:120;
+    document.getElementById('of-feed').value=bot?bot.dataFeedUrl:'';
+    document.getElementById('of-sim').checked=bot?!!bot.simulationMode:true;
+    this.ofBrokerChange();
+    this.ofUpdateTP();
+    document.getElementById('of-bot-modal').classList.remove('hidden');
+  },
+  closeBotModal() { document.getElementById('of-bot-modal').classList.add('hidden'); },
+  ofBrokerChange() {
+    const broker = document.getElementById('of-broker').value;
+    const acctSel = document.getElementById('of-account');
+    const accts = (this.accounts||[]).filter(a=>!broker||a.broker===broker);
+    acctSel.innerHTML='<option value="">— Select Account —</option>'+accts.map(a=>`<option value="${a.id}">${a.label} (${a.broker})</option>`).join('');
+  },
+  async editBot(id) {
+    try {
+      const data = await API.get('/autotrader/bots');
+      const bot = (data.bots||[]).find(b=>b.id===id);
+      if(bot) this.openBotModal(bot);
+    } catch(e){ toast('Could not load bot','error'); }
+  },
+  async saveBot() {
+    const id = document.getElementById('of-bot-id').value;
+    const sl = +document.getElementById('of-sl').value;
+    const rr = +document.getElementById('of-rr').value;
+    const payload = {
+      name:               document.getElementById('of-name').value.trim(),
+      symbol:             document.getElementById('of-symbol').value.trim().toUpperCase(),
+      qty:                +document.getElementById('of-qty').value,
+      broker:             document.getElementById('of-broker').value,
+      accountId:          document.getElementById('of-account').value,
+      minConfidence:      +document.getElementById('of-conf').value,
+      slTicks:            sl,
+      tpTicks:            Math.round(sl * rr),
+      riskRewardRatio:    rr,
+      maxDailyLoss:       +document.getElementById('of-maxloss').value,
+      maxDailyTrades:     +document.getElementById('of-maxtr').value,
+      maxConsecLosses:    +document.getElementById('of-maxcl').value,
+      deltaThreshold:     +document.getElementById('of-delta').value,
+      imbalanceThreshold: +document.getElementById('of-imb').value,
+      cooldownBars:       +document.getElementById('of-cool').value,
+      trendPeriod:        +document.getElementById('of-trendp').value,
+      atrPeriod:          +document.getElementById('of-atrp').value,
+      minAtrTicks:        +document.getElementById('of-minatr').value,
+      maxAtrTicks:        +document.getElementById('of-maxatr').value,
+      dataFeedUrl:        document.getElementById('of-feed').value.trim(),
+      simulationMode:     document.getElementById('of-sim').checked,
+    };
+    if(!payload.name||!payload.symbol||!payload.broker){ document.getElementById('of-bot-err').textContent='Name, symbol and broker are required.'; return; }
+    try {
+      const btn=document.getElementById('of-save-btn'); btn.disabled=true; btn.textContent='Saving…';
+      if(id) await API.put(`/autotrader/bots/${id}`,payload);
+      else   await API.post('/autotrader/bots',payload);
+      this.closeBotModal(); toast('Bot saved','success'); this.loadOrderFlow();
+    } catch(e){ document.getElementById('of-bot-err').textContent=e.message||'Save failed'; }
+    finally { const btn=document.getElementById('of-save-btn'); btn.disabled=false; btn.textContent='Save Bot'; }
+  },
+  async startBot(id) {
+    try { await API.post(`/autotrader/bots/${id}/start`,{}); toast('Bot started','success'); setTimeout(()=>this.loadOrderFlow(),800); }
+    catch(e){ toast(e.message||'Start failed','error'); }
+  },
+  async stopBot(id) {
+    try { await API.post(`/autotrader/bots/${id}/stop`,{}); toast('Bot stopped','success'); setTimeout(()=>this.loadOrderFlow(),800); }
+    catch(e){ toast(e.message||'Stop failed','error'); }
+  },
+  async deleteBot(id) {
+    if(!confirm('Delete this bot?')) return;
+    try { await API.del(`/autotrader/bots/${id}`); toast('Bot deleted','success'); this.loadOrderFlow(); }
+    catch(e){ toast(e.message||'Delete failed','error'); }
+  },
+  calcRR() {
+    const wr  = parseFloat(document.getElementById('calc-wr')?.value) || 45;
+    const sl  = parseFloat(document.getElementById('calc-sl')?.value) || 10;
+    const tpd = parseFloat(document.getElementById('calc-tpd')?.value) || 6;
+    const rr  = 2; // fixed 2:1 for calculator
+    const tp  = sl * rr;
+    if(document.getElementById('calc-tp')) document.getElementById('calc-tp').value = tp;
+    // Expected value per trade: wr%*tp - (1-wr%)*sl
+    const ev  = (wr/100)*tp - ((100-wr)/100)*sl;
+    const evDay = ev * tpd;
+    const breakEven = (sl / (sl + tp)) * 100;
+    const color = ev >= 0 ? 'var(--green)' : 'var(--red)';
+    const out = document.getElementById('calc-output');
+    if(!out) return;
+    out.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted)">Break-Even Win Rate</div>
+          <div style="font-size:18px;font-weight:700;color:var(--accent)">${breakEven.toFixed(1)}%</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted)">Expected Value / trade</div>
+          <div style="font-size:18px;font-weight:700;color:${color}">${ev>=0?'+':''}${ev.toFixed(1)} ticks</div>
+        </div>
+        <div style="background:var(--bg);border-radius:6px;padding:10px;text-align:center">
+          <div style="font-size:10px;color:var(--muted)">Expected / day (${tpd} trades)</div>
+          <div style="font-size:18px;font-weight:700;color:${color}">${evDay>=0?'+':''}${evDay.toFixed(1)} ticks</div>
+        </div>
+      </div>
+      <div style="color:var(--muted);font-size:12px">
+        At <strong style="color:var(--text)">${wr}% win rate</strong> with <strong style="color:var(--text)">${rr}:1 R:R</strong>
+        (SL ${sl}t / TP ${tp}t): 
+        ${ev>=0
+          ? `<span style="color:var(--green)">✓ PROFITABLE — EV = +${ev.toFixed(2)} ticks per trade.</span> 
+             You need to win >50% to be profitable at 1:1. At 2:1 you only need &gt;${breakEven.toFixed(0)}%.`
+          : `<span style="color:var(--red)">✗ LOSING — raise win rate or increase R:R ratio.</span>
+             Minimum win rate needed: ${breakEven.toFixed(1)}%.`}
+        <br>
+        <em>Tip: The engine's confidence filter, ATR regime check, and EMA trend alignment work together to reach 40-55%+ win rates on liquid futures by only taking the highest-probability setups.</em>
+      </div>`;
+  },
+
+  async copyText(text,btn) {
+    try{
+      await navigator.clipboard.writeText(text);
+      if(btn){const orig=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=orig,2000);}
+      toast('Copied!','success');
+    }catch{toast('Copy failed','error');}
+  },
+};
+document.addEventListener('DOMContentLoaded',()=>{
+  App.init();
+  App.calcRR();
+  // Track mouse position for reactive button glow (radial-gradient origin)
+  document.addEventListener('mousemove',e=>{
+    const btn=e.target.closest('button');
+    if(!btn)return;
+    const r=btn.getBoundingClientRect();
+    btn.style.setProperty('--rx',((e.clientX-r.left)/r.width*100)+'%');
+    btn.style.setProperty('--ry',((e.clientY-r.top)/r.height*100)+'%');
+  });
+  // Animated number countup for dashboard values
+  App._countUp=(el,target,suffix='',prefix='',dur=600)=>{
+    const start=performance.now();
+    const from=parseFloat(el.dataset.from||0)||0;
+    const run=now=>{
+      const p=Math.min((now-start)/dur,1);
+      const ease=1-Math.pow(1-p,3);
+      const v=from+(target-from)*ease;
+      el.textContent=prefix+(Number.isInteger(target)?Math.round(v):v.toFixed(2))+suffix;
+      if(p<1)requestAnimationFrame(run);
+      else el.dataset.from=target;
+    };
+    requestAnimationFrame(run);
+  };
+});
+</script>
+</body>
+</html>
