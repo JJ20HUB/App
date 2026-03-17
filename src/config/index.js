@@ -12,9 +12,12 @@ module.exports = {
   },
 
   tradovate: {
-    baseUrl: process.env.TRADOVATE_BASE_URL || 'https://demo.tradovateapi.com',
-    appId: process.env.TRADOVATE_APP_ID || '',
-    appVersion: process.env.TRADOVATE_APP_VERSION || '1.0',
+    baseUrl:    process.env.TRADOVATE_BASE_URL     || 'https://demo.tradovateapi.com',
+    appId:      process.env.TRADOVATE_APP_ID       || '',
+    appVersion: process.env.TRADOVATE_APP_VERSION  || '1.0',
+    // Credentials used for the live market-data WebSocket feed
+    username:   process.env.TRADOVATE_USERNAME     || '',
+    password:   process.env.TRADOVATE_PASSWORD     || '',
   },
 
   lucid: {
@@ -35,4 +38,17 @@ module.exports = {
   },
 
   webhookRateLimit: parseInt(process.env.WEBHOOK_RATE_LIMIT, 10) || 60,
+
+  claude: {
+    apiKey:            process.env.ANTHROPIC_API_KEY || '',
+    model:             process.env.CLAUDE_MODEL      || 'claude-sonnet-4-5',
+    enabled:           process.env.CLAUDE_ENABLED    === 'true',
+    minEngineConfidence: parseInt(process.env.CLAUDE_MIN_ENGINE_CONFIDENCE, 10) || 60,
+  },
+
+  orderFlow: {
+    tickSize:              parseFloat(process.env.TICK_SIZE                   || 0.25),
+    topstepxPollIntervalMs: parseInt(process.env.TOPSTEPX_POLL_INTERVAL_MS,  10) || 30_000,
+    claudeOfBarsInterval:   parseInt(process.env.CLAUDE_OF_BARS_INTERVAL,    10) || 20,
+  },
 };

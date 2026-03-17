@@ -116,8 +116,8 @@ async function placeOrder(order, cfg) {
   const isStop    = orderType === 3 || orderType === 4;
 
   const body = {
-    accountId:  cfg.accountId,
-    contractId: order.ticker,         // e.g. "CON.F.US.ENQ.U25" or user can pass full contractId
+    accountId:  parseInt(cfg.accountId, 10) || cfg.accountId,
+    contractId: order.ticker,         // e.g. "CON.F.US.MES.M26" — must be TopstepX contract ID, not TradingView ticker
     type:       orderType,
     side,
     size:       order.qty,
@@ -165,12 +165,26 @@ async function getAccounts(cfg) {
   return res.data.accounts || [];
 }
 
+// ── Contract search ───────────────────────────────────────────────────────────
+// Topstep evaluation accounts always use live:false for contract searches
+// even though the API base URL is api.topstepx.com (live gateway).
+async function getContracts(cfg, searchText) {
+  const token = await getToken(cfg);
+  const base  = getBaseUrl(cfg);
+  const res   = await axios.post(`${base}/api/Contract/search`,
+    { live: false, searchText: searchText || '' },
+    { headers: authHeaders(token) }
+  );
+  if (!res.data.success) throw apiError('Contract search failed', res.data);
+  return (res.data.contracts || []).filter(c => c.activeContract);
+}
+
 // ── Open positions ────────────────────────────────────────────────────────────
 async function getPositions(cfg) {
   const token = await getToken(cfg);
   const base  = getBaseUrl(cfg);
   const res   = await axios.post(`${base}/api/Position/searchOpen`,
-    { accountId: cfg.accountId },
+    { accountId: parseInt(cfg.accountId, 10) || cfg.accountId },
     { headers: authHeaders(token) }
   );
   if (!res.data.success) throw apiError('Position search failed', res.data);
@@ -183,11 +197,67 @@ async function getTrades(cfg, startTimestamp) {
   const base  = getBaseUrl(cfg);
   const start = startTimestamp || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const res   = await axios.post(`${base}/api/Trade/search`,
-    { accountId: cfg.accountId, startTimestamp: start },
+    { accountId: parseInt(cfg.accountId, 10) || cfg.accountId, startTimestamp: start },
     { headers: authHeaders(token) }
   );
   if (!res.data.success) throw apiError('Trade search failed', res.data);
   return res.data.trades || [];
 }
 
-module.exports = { placeOrder, getAccounts, getPositions, getTrades };
+// ── Historical bars ───────────────────────────────────────────────────────────
+/**
+ * Fetch historical OHLCV + bid/ask volume bars from TopStepX history API.
+ *
+ * @param {object} cfg          – broker config ({ userName, apiKey, accountId, sim })
+ * @param {string} contractId   – e.g. "CON.F.US.MES.M26"
+ * @param {object} [opts]
+ * @param {number} [opts.unit]       – bar unit: 1=Minute 2=Day 3=Week 4=Month (default 1)
+ * @param {number} [opts.unitNumber] – bar size in that unit (default 1 → 1-min bars)
+ * @param {number} [opts.limit]      – max bars to return (default 500)
+ * @param {string} [opts.startTime]  – ISO string start (default: 8 h ago)
+ * @param {string} [opts.endTime]    – ISO string end   (default: now)
+ * @returns {Array} bars shaped as OrderFlowEngine.ingest() expects:
+ *   { symbol, time, open, high, low, close, volume, askVol, bidVol }
+ */
+async function getHistoricalBars(cfg, contractId, opts = {}) {
+  const token = await getToken(cfg);
+  const base  = getBaseUrl(cfg);
+
+  const unit       = opts.unit       ?? 1;  // 1 = Minute
+  const unitNumber = opts.unitNumber ?? 1;  // 1-minute bars
+  const limit      = opts.limit      ?? 500;
+  const endTime    = opts.endTime    ?? new Date().toISOString();
+  const startTime  = opts.startTime  ?? new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString();
+
+  const res = await axios.post(
+    `${base}/api/History/retrieve`,
+    {
+      contractId,
+      live:        !cfg.sim,
+      startTime,
+      endTime,
+      unit,
+      unitNumber,
+      limit,
+    },
+    { headers: authHeaders(token) }
+  );
+
+  if (!res.data.success) throw apiError('History retrieve failed', res.data);
+
+  const rawBars = res.data.bars || [];
+  return rawBars.map(b => ({
+    symbol:  contractId,
+    time:    b.timestamp || b.t,
+    open:    b.open  || b.o,
+    high:    b.high  || b.h,
+    low:     b.low   || b.l,
+    close:   b.close || b.c,
+    volume:  b.volume       || b.vol || b.v || 0,
+    // ProjectX history bars expose offer/bid volume split when available
+    askVol:  b.offerVolume  || b.upVolume   || b.buyVolume  || Math.round((b.volume || 0) * 0.5),
+    bidVol:  b.bidVolume    || b.downVolume || b.sellVolume || Math.round((b.volume || 0) * 0.5),
+  }));
+}
+
+module.exports = { placeOrder, getAccounts, getContracts, getPositions, getTrades, getHistoricalBars };

@@ -22,7 +22,7 @@ router.use(authMiddleware);
 // POST /accounts/lookup  { broker, userName, apiKey, sim }
 // Returns the list of accounts from the broker so the user can find their ID.
 router.post('/lookup', async (req, res) => {
-  const { broker, userName, apiKey, password, appId, appVersion, sim } = req.body;
+  const { broker, userName, apiKey, secretKey, password, appId, appVersion, sim } = req.body;
 
   if (!broker) return res.status(400).json({ error: '"broker" is required.' });
   if (!supportedBrokers.includes(broker.toLowerCase())) {
@@ -35,7 +35,7 @@ router.post('/lookup', async (req, res) => {
   }
 
   try {
-    const cfg = { userName, apiKey, password, appId, appVersion, sim: !!sim };
+    const cfg = { userName, apiKey, secretKey, password, appId, appVersion, sim: !!sim };
     // topstep (Tradovate) uses username/password fields
     if (cfg.userName && !cfg.username) cfg.username = cfg.userName;
     const accounts = await adapter.getAccounts(cfg);
@@ -65,7 +65,7 @@ router.get('/', (req, res) => {
 
 // ── Connect ───────────────────────────────────────────────────────────────────
 router.post('/', (req, res) => {
-  const { broker, label, userName, apiKey, accountId, sim } = req.body;
+  const { broker, label, userName, apiKey, secretKey, accountId, sim } = req.body;
 
   if (!broker) {
     return res.status(400).json({ error: '"broker" is required.' });
@@ -83,6 +83,7 @@ router.post('/', (req, res) => {
     label:     resolvedLabel,
     userName:  userName  || '',
     apiKey:    apiKey    || '',
+    secretKey: secretKey || '',
     accountId: accountId || '',
     sim:       !!sim,
     createdAt: new Date().toISOString(),
@@ -109,14 +110,15 @@ router.get('/:id/test', async (req, res) => {
     let result;
     if (typeof broker.getAccounts === 'function') {
       result = await broker.getAccounts({
-        userName:  account.userName,
-        username:  account.userName,   // Tradovate uses lowercase 'username'
-        apiKey:    account.apiKey,
-        password:  account.password,
-        appId:     account.appId,
+        userName:   account.userName,
+        username:   account.userName,
+        apiKey:     account.apiKey,
+        secretKey:  account.secretKey,
+        password:   account.password,
+        appId:      account.appId,
         appVersion: account.appVersion,
-        accountId: account.accountId,
-        sim:       account.sim,
+        accountId:  account.accountId,
+        sim:        account.sim,
       });
       return res.json({
         success: true,
@@ -131,6 +133,47 @@ router.get('/:id/test', async (req, res) => {
     logger.error(`[accounts/test] ${err.message}`);
     return res.status(502).json({ error: err.message });
   }
+});
+
+// ── Contract search ───────────────────────────────────────────────────────────
+// GET /accounts/:id/contracts?searchText=MES
+router.get('/:id/contracts', async (req, res) => {
+  const account = db.get('accounts').find({ id: req.params.id, userId: req.user.id }).value();
+  if (!account) return res.status(404).json({ error: 'Account not found.' });
+
+  const broker = BROKERS[account.broker];
+  if (!broker || typeof broker.getContracts !== 'function')
+    return res.status(400).json({ error: 'Contract search not supported for this broker.' });
+
+  try {
+    const contracts = await broker.getContracts({
+      userName:  account.userName,
+      apiKey:    account.apiKey,
+      accountId: account.accountId,
+      sim:       account.sim,
+    }, req.query.searchText || '');
+    return res.json({ contracts });
+  } catch (err) {
+    logger.error(`[accounts/contracts] ${err.message}`);
+    return res.status(502).json({ error: err.message });
+  }
+});
+
+// ── Update ────────────────────────────────────────────────────────────────────
+// PATCH /accounts/:id  { accountId, label, sim }
+router.patch('/:id', (req, res) => {
+  const account = db.get('accounts').find({ id: req.params.id, userId: req.user.id }).value();
+  if (!account) return res.status(404).json({ error: 'Account not found.' });
+
+  const allowed = ['accountId', 'label', 'sim', 'apiKey', 'secretKey', 'userName'];
+  const updates = {};
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) updates[key] = req.body[key];
+  }
+
+  db.get('accounts').find({ id: req.params.id }).assign(updates).write();
+  logger.info(`[accounts] Updated account ${req.params.id}: ${JSON.stringify(Object.keys(updates))}`);
+  return res.json({ message: 'Account updated.', updated: Object.keys(updates) });
 });
 
 // ── Delete ────────────────────────────────────────────────────────────────────

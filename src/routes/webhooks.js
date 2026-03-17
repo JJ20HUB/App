@@ -18,7 +18,8 @@ const express = require('express');
 const rateLimit = require('express-rate-limit');
 const authMiddleware = require('../middleware/auth');
 const webhookService = require('../services/webhookService');
-const orderService = require('../services/orderService');
+const orderService  = require('../services/orderService');
+const db            = require('../models/db');
 const { supportedBrokers } = require('../brokers');
 const config = require('../config');
 const logger = require('../utils/logger');
@@ -71,7 +72,7 @@ router.post('/webhook/:token', webhookLimiter, async (req, res) => {
   // 2. If linked to a saved account, resolve fresh credentials from that account
   let effectiveWebhook = webhook;
   if (webhook.linkedAccountId) {
-    const account = require('../models/db').get('accounts').find({ id: webhook.linkedAccountId }).value();
+    const account = db.get('accounts').find({ id: webhook.linkedAccountId, userId: webhook.userId }).value();
     if (!account) {
       return res.status(502).json({ error: 'Linked account not found — please reconnect it in the Accounts tab.' });
     }
@@ -145,7 +146,7 @@ router.post('/webhooks', (req, res) => {
     let resolvedBrokerConfig = brokerConfig || {};
 
     if (linkedAccountId) {
-      const account = require('../models/db').get('accounts').find({ id: linkedAccountId, userId: req.user.id }).value();
+      const account = db.get('accounts').find({ id: linkedAccountId, userId: req.user.id }).value();
       if (!account) {
         return res.status(404).json({ error: 'Linked account not found.' });
       }

@@ -70,12 +70,12 @@ router.get('/bots/:id/status', (req, res) => {
 
 // ── Start / stop ──────────────────────────────────────────────────────────────
 
-router.post('/bots/:id/start', (req, res) => {
+router.post('/bots/:id/start', async (req, res) => {
   const bot = svc.getBot(req.params.id);
   if (!bot || bot.userId !== req.user.id)
     return res.status(404).json({ error: 'Bot not found' });
   try {
-    const result = svc.startBot(req.params.id);
+    const result = await svc.startBot(req.params.id);
     res.json({ ...result, botId: req.params.id });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -118,6 +118,44 @@ router.get('/signals/:botId', (req, res) => {
     return res.status(404).json({ error: 'Bot not found' });
   const signals = svc.getSignals(req.user.id, req.params.botId, 200);
   res.json({ signals });
+});
+
+// ── GEX Key Level routes ──────────────────────────────────────────────────────
+
+/**
+ * GET /autotrader/bots/:id/gex
+ * Returns the current GEX key levels for a running bot.
+ * Used by the dashboard to render the level map on the chart.
+ */
+router.get('/bots/:id/gex', (req, res) => {
+  const bot = svc.getBot(req.params.id);
+  if (!bot || bot.userId !== req.user.id)
+    return res.status(404).json({ error: 'Bot not found' });
+  const levels = svc.getGEXLevels(req.params.id);
+  if (!levels) {
+    return res.status(202).json({
+      message: bot.gexEnabled
+        ? 'GEX levels not yet computed — bot may still be loading historical data'
+        : 'GEX analysis is not enabled on this bot (set gexEnabled:true)',
+      gexLevels: null,
+    });
+  }
+  res.json({ gexLevels: levels });
+});
+
+/**
+ * GET /autotrader/bots/:id/gex/analysis
+ * Returns the most recent Claude GEX analysis result for a running bot.
+ */
+router.get('/bots/:id/gex/analysis', (req, res) => {
+  const bot = svc.getBot(req.params.id);
+  if (!bot || bot.userId !== req.user.id)
+    return res.status(404).json({ error: 'Bot not found' });
+  const status = svc.getBotStatus(req.params.id);
+  res.json({
+    lastGEXAnalysis: status?.lastGEXAnalysis || null,
+    gexSummary:      status?.stats?.gexSummary || null,
+  });
 });
 
 module.exports = router;

@@ -37,17 +37,31 @@ const DEFAULTS = {
   absorptionMinVol:    1000,     // min volume to qualify as absorption candle
   absorptionMaxMove:   2,        // max ticks moved for absorption classification
   momentumPeriod:      5,        // bars to compute momentum over
-  minConfidence:       55,       // min confidence % to emit a trade signal
-  cooldownBars:        3,        // bars to wait after last signal before re-signalling
+  minConfidence:       70,       // ↑ raised: only fire genuinely high-probability signals
+  cooldownBars:        5,        // ↑ raised: prevents chasing fast moves
   // ── Trend filter ──────────────────────────────────────────────────────────
   trendPeriod:         10,       // EMA period for trend direction
   trendBonus:          20,       // max pts added when signal aligns with EMA slope
   // ── Regime (ATR) filter ───────────────────────────────────────────────────
   atrPeriod:           10,       // period for Average True Range
-  minAtrTicks:         3,        // below this → too choppy, suppress signal (0=off)
-  maxAtrTicks:         120,      // above this → too volatile, suppress signal (0=off)
+  minAtrTicks:         4,        // ↑ raised: skip dead / no-edge markets
+  maxAtrTicks:         100,      // ↓ tightened: skip blow-through runaway conditions
   // ── Risk / reward ─────────────────────────────────────────────────────────
   riskRewardRatio:     2.0,      // TP = SL × riskRewardRatio  (2 = 2:1)
+  // ── Confluence gate (NEW) ─────────────────────────────────────────────────
+  // Minimum number of the 6 scored components that must agree on direction.
+  // Higher = fewer trades, higher quality. 4/6 = strong multi-factor confirmation.
+  minConfluence:       4,        // require ≥4 components pointing the same way
+  // ── Signal warmup (NEW) ───────────────────────────────────────────────────
+  // Don't fire any signal until this many bars have been ingested (engine warm-up).
+  minWarmupBars:       30,
+  // ── Volume gate (NEW) ────────────────────────────────────────────────────
+  // Signal bar must have at least this much volume to avoid low-liquidity noise.
+  minSignalVolume:     200,
+  // ── Delta/CumDelta/Imbalance triple-lock (NEW) ────────────────────────────
+  // When true, ALL THREE core order-flow metrics (delta direction, cumDelta trend,
+  // imbalance direction) must agree with the signal. Eliminates mixed signals.
+  requireTripleLock:   true,
 };
 
 // ─── Engine class ─────────────────────────────────────────────────────────────
@@ -139,8 +153,14 @@ class OrderFlowEngine extends EventEmitter {
     const { bars, lastSignalIdx, idx } = state;
     if (bars.length < 5) return null; // need minimum history
 
+    // ── Warmup gate — don't trade until the engine has seen enough bars ───
+    if (idx < this.cfg.minWarmupBars) return null;
+
     const recent = bars.slice(-this.cfg.momentumPeriod);
     const latest = bars[bars.length - 1];
+
+    // ── Volume gate — skip signal bars with too little volume ─────────────
+    if ((latest.volume || 0) < this.cfg.minSignalVolume) return null;
 
     // ── Regime filter (ATR) ───────────────────────────────────────────────
     //    Too tight = choppy, too wide = blow-through — skip signal.
@@ -214,10 +234,18 @@ class OrderFlowEngine extends EventEmitter {
     let buyScore  = 0;
     let sellScore = 0;
     const reasons = [];
+    let buyConfluences  = 0;
+    let sellConfluences = 0;
 
     for (const v of votes) {
-      if (v.dir === 'BUY')  { buyScore  += v.score; if (v.score > 5) reasons.push(`↑ ${v.label} (${v.score.toFixed(0)}pts)`); }
-      if (v.dir === 'SELL') { sellScore += v.score; if (v.score > 5) reasons.push(`↓ ${v.label} (${v.score.toFixed(0)}pts)`); }
+      if (v.dir === 'BUY')  {
+        buyScore  += v.score;
+        if (v.score > 5) { buyConfluences++;  reasons.push(`↑ ${v.label} (${v.score.toFixed(0)}pts)`); }
+      }
+      if (v.dir === 'SELL') {
+        sellScore += v.score;
+        if (v.score > 5) { sellConfluences++; reasons.push(`↓ ${v.label} (${v.score.toFixed(0)}pts)`); }
+      }
     }
 
     const maxScore   = 130; // max possible aggregate (added trend bonus)
@@ -227,9 +255,34 @@ class OrderFlowEngine extends EventEmitter {
     // Apply regime penalty: choppy/volatile markets → cap confidence at 50%
     if (!regimeOk) confidence = Math.min(confidence, 50);
 
-    const signal = confidence >= this.cfg.minConfidence
-      ? (buyScore >= sellScore ? 'BUY' : 'SELL')
-      : 'HOLD';
+    const dominantDir      = buyScore >= sellScore ? 'BUY' : 'SELL';
+    const dominantConfluence = dominantDir === 'BUY' ? buyConfluences : sellConfluences;
+
+    // ── Confluence gate — require ≥N components pointing same way ─────────
+    if (dominantConfluence < this.cfg.minConfluence) return null;
+
+    // ── Triple-lock — delta + cumDelta + imbalance must ALL agree ─────────
+    // These are the three purest order-flow metrics. If they disagree the setup
+    // is mixed and the edge evaporates.
+    if (this.cfg.requireTripleLock) {
+      const coreDirs = [deltaDir, cdDir, imbalanceDir];
+      const coreAgree = coreDirs.every(d => d === dominantDir);
+      if (!coreAgree) return null; // mixed core signal — skip
+    }
+
+    // ── Divergence filter — price vs cumDelta ─────────────────────────────
+    // Price making new high but cumDelta declining = bearish divergence → suppress BUY
+    // Price making new low but cumDelta rising    = bullish divergence → suppress SELL
+    const lookback  = Math.min(bars.length, 10);
+    const oldBar    = bars[bars.length - lookback];
+    if (oldBar) {
+      const priceRising  = latest.close > oldBar.close;
+      const deltaRising  = (latest.cumDelta || 0) > (oldBar.cumDelta || 0);
+      if (dominantDir === 'BUY'  && priceRising  && !deltaRising) return null; // bearish divergence
+      if (dominantDir === 'SELL' && !priceRising && deltaRising)  return null; // bullish divergence
+    }
+
+    const signal = confidence >= this.cfg.minConfidence ? dominantDir : 'HOLD';
 
     // Cooldown: don't repeat same direction signal within cooldownBars
     if (signal !== 'HOLD') {
@@ -241,7 +294,8 @@ class OrderFlowEngine extends EventEmitter {
       symbol:          sym,
       signal,
       confidence,
-      direction:       buyScore >= sellScore ? 'BUY' : 'SELL',
+      direction:       dominantDir,
+      confluences:     dominantConfluence, // how many components agreed (quality indicator)
       reasons,
       riskRewardRatio: this.cfg.riskRewardRatio,
       metrics: {
@@ -252,12 +306,26 @@ class OrderFlowEngine extends EventEmitter {
         momentum:    momentumDelta,
         buyScore:    Math.round(buyScore),
         sellScore:   Math.round(sellScore),
+        buyConfluences,
+        sellConfluences,
         ema:         Math.round(emaNew * 100) / 100,
         emaDiff:     Math.round(emaDiff * 100) / 100,
         atr:         Math.round(atr * 100) / 100,
         trend:       trendDir,
         regime,
       },
+      // Last 15 bars of raw order flow tape — forwarded to Claude for full context
+      recentBars: state.bars.slice(-15).map(b => ({
+        t:         b.time,
+        o:         b.open,  h: b.high, l: b.low, c: b.close,
+        vol:       b.volume,
+        askVol:    Math.round(b.askVol),
+        bidVol:    Math.round(b.bidVol),
+        delta:     Math.round(b.delta),
+        imb:       Math.round(b.imbalance * 100) / 100,
+        abs:       b.absorption ? 1 : 0,
+        atr:       Math.round((b.atr || 0) * 100) / 100,
+      })),
       bar:       latest,
       timestamp: new Date().toISOString(),
     };

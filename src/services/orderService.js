@@ -29,12 +29,13 @@ async function processAlert(webhook, rawBody) {
   if (settings.dailyProfitTarget != null || settings.dailyLossLimit != null) {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
+    // Only count closed trades with a recorded PnL — open trades have pnl=null
     const todayPnl = db
       .get('trade_log')
       .filter({ userId: webhook.userId })
       .value()
-      .filter(t => new Date(t.openedAt) >= todayStart)
-      .reduce((sum, t) => sum + (t.pnl || 0), 0);
+      .filter(t => new Date(t.openedAt) >= todayStart && t.status === 'closed' && t.pnl != null)
+      .reduce((sum, t) => sum + t.pnl, 0);
 
     if (settings.dailyProfitTarget != null && todayPnl >= settings.dailyProfitTarget) {
       throw new Error(
@@ -73,9 +74,15 @@ async function processAlert(webhook, rawBody) {
     if (order.slTicks == null && settings.defaultSlTicks != null) {
       order.slTicks = settings.defaultSlTicks;
     }
-    if ((order.qty == null || order.qty === 0) && settings.defaultContracts != null) {
+    // Use defaultContracts when the alert did not explicitly provide a quantity
+    if (!order._qtyFromAlert && settings.defaultContracts != null) {
       order.qty = settings.defaultContracts;
     }
+    // Final fallback: must have at least 1 contract
+    if (order.qty == null || order.qty <= 0) {
+      order.qty = 1;
+    }
+    delete order._qtyFromAlert;
   }
 
   // 3. Execute the order via the appropriate broker

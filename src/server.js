@@ -1,6 +1,6 @@
 'use strict';
 /**
- * server.js  –  Apex Trading – Automated Order Routing
+ * server.js  –  Golden Arc Automation – Automated Order Routing
  *
  * Entry point. Starts the Express server on port 80 (or process.env.PORT).
  * All TradingView webhooks are received here and routed to Topstep / Lucid.
@@ -25,6 +25,8 @@ const accountRoutes      = require('./routes/accounts');
 const tradelogRoutes     = require('./routes/tradelog');
 const autotraderRoutes   = require('./routes/autotrader');
 const indicatorRoutes    = require('./routes/indicators');
+const aiRoutes           = require('./routes/ai');
+const strategyRoutes     = require('./routes/strategies');
 
 const app = express();
 
@@ -33,7 +35,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 
 // ── Serve the frontend (static files from /public) ────────────────────────────
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, '../public'), { etag: false, maxAge: 0 }));
 
 // Parse JSON bodies — TradingView sends application/json alerts
 app.use(express.json({ type: ['application/json', 'text/plain'] }));
@@ -64,10 +66,12 @@ app.use('/accounts',    accountRoutes);
 app.use('/tradelog',    tradelogRoutes);
 app.use('/autotrader',  autotraderRoutes);
 app.use('/indicators',  indicatorRoutes);
+app.use('/ai',          aiRoutes);
+app.use('/strategies',  strategyRoutes);
 
 // ── SPA catch-all: serve index.html for all non-API GET requests ─────────────
 app.get('*', (req, res, next) => {
-  const apiPaths = ['/auth', '/webhooks', '/webhook/', '/user', '/accounts', '/tradelog', '/autotrader', '/indicators', '/health'];
+  const apiPaths = ['/auth', '/webhooks', '/webhook/', '/user', '/accounts', '/tradelog', '/autotrader', '/indicators', '/ai', '/strategies', '/health'];
   if (apiPaths.some(p => req.path.startsWith(p))) return next();
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
@@ -87,12 +91,12 @@ app.use((err, req, res, _next) => {
 app.listen(config.port, '0.0.0.0', () => {
   logger.info(`
 ╔══════════════════════════════════════════════════════╗
-║       Apex Trading – Online                        ║
+║       Golden Arc Automation – Online               ║
 ╠══════════════════════════════════════════════════════╣
 ║  Port          : ${String(config.port).padEnd(34)}║
 ║  Environment   : ${String(config.env).padEnd(34)}║
 ║  Public URL    : ${String(config.publicBaseUrl).padEnd(34)}║
-║  Brokers       : TopstepX, Lucid Markets            ║
+║  Brokers       : TopstepX · Lucid · Bitunix         ║
 ╚══════════════════════════════════════════════════════╝
   `.trim());
 });

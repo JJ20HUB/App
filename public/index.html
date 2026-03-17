@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Apex Trading</title>
+  <title>Golden Arc Automation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
@@ -62,6 +62,14 @@
     .nav-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,192,.07)}
     .nav-icon{font-size:17px;width:20px;text-align:center}
     .nav-label{font-size:13px;font-weight:500}
+    .nav-group{position:relative}
+    .nav-sub{overflow:hidden;max-height:0;transition:max-height .28s cubic-bezier(.4,0,.2,1)}
+    .nav-sub.open{max-height:260px}
+    .nav-sub-item{display:flex;align-items:center;gap:8px;padding:7px 18px 7px 50px;color:var(--muted);cursor:pointer;font-size:12px;transition:all .15s;border-left:3px solid transparent}
+    .nav-sub-item:hover{color:var(--text);background:rgba(255,255,255,.025)}
+    .nav-sub-item.active{color:var(--accent);background:rgba(0,212,192,.05);border-left-color:var(--accent)}
+    .nav-arrow{margin-left:auto;font-size:9px;transition:transform .25s;display:inline-block;opacity:.5}
+    .nav-arrow.open{transform:rotate(180deg);opacity:1}
     .sb-foot{padding:14px 18px;border-top:1px solid var(--border)}
     .user-info{display:flex;align-items:center;gap:10px;margin-bottom:10px}
     .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
@@ -316,8 +324,8 @@
           <line x1="32" y1="41" x2="32" y2="51" stroke="#00d4c0" stroke-width="1.8" stroke-linecap="round"/>
         </g>
       </svg>
-      <h1 style="font-size:20px;font-weight:800;letter-spacing:-.3px">APEX <span style="color:var(--accent)">TRADING</span></h1>
-      <p style="color:var(--muted);font-size:12px;margin-top:4px">Automated Order Routing Platform</p>
+      <h1 style="font-size:20px;font-weight:800;letter-spacing:-.3px">GOLDEN ARC <span style="color:var(--accent)">AUTOMATION</span></h1>
+      <p style="color:var(--muted);font-size:12px;margin-top:4px">AI-Powered Automated Trading Platform</p>
     </div>
     <div class="auth-tabs">
       <button class="auth-tab active" id="tab-login" onclick="App.authTab('login')">Sign In</button>
@@ -383,8 +391,8 @@
             <line x1="16" y1="20" x2="16" y2="26" stroke="#00d4c0" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
           <div>
-            <div style="font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--text)">APEX <span style="color:var(--accent)">TRADING</span></div>
-            <div style="font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.3px">ORDER ROUTING</div>
+            <div style="font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--text)">GOLDEN ARC <span style="color:var(--accent)">AUTOMATION</span></div>
+            <div style="font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:.3px">AI TRADING PLATFORM</div>
           </div>
         </div>
       </div>
@@ -398,7 +406,22 @@
         <div class="nav-item"        data-s="tradelog"    onclick="App.nav('tradelog')">   <span class="nav-icon">📒</span><span class="nav-label">Trade Log</span></div>
         <div class="nav-item"        data-s="orders"      onclick="App.nav('orders')">     <span class="nav-icon">📋</span><span class="nav-label">Order History</span></div>
         <div class="nav-item"        data-s="profile"     onclick="App.nav('profile')">    <span class="nav-icon">👤</span><span class="nav-label">Profile</span></div>
-        <div class="nav-item"        data-s="orderflow"   onclick="App.nav('orderflow')"> <span class="nav-icon">🤖</span><span class="nav-label">Order Flow AI</span></div>
+        <div class="nav-item"        data-s="goldenarcai" onclick="App.nav('goldenarcai')"> <span class="nav-icon">🎯</span><span class="nav-label">Order Flow</span></div>
+        <div class="nav-group">
+          <div class="nav-item" data-s="strategies" onclick="App.nav('strategies');App.navToggle('strat-sub','strat-arrow')">
+            <span class="nav-icon">⚡</span><span class="nav-label" style="display:flex;align-items:center;width:100%">Strategies<span class="nav-arrow" id="strat-arrow">▾</span></span>
+          </div>
+          <div class="nav-sub" id="strat-sub">
+            <div class="nav-sub-item" onclick="App.nav('strategies');App.stratBrokerTab('topstepx')">🏆 TopStep</div>
+            <div class="nav-sub-item" onclick="App.nav('strategies');App.stratBrokerTab('bitunix')">₿ Bitunix</div>
+            <div class="nav-sub-item" onclick="App.nav('strategies');App.stratBrokerTab('lucid')">🌊 Lucid</div>
+          </div>
+        </div>
+        <div class="nav-group">
+          <div class="nav-item" data-s="ai" onclick="App.nav('ai')">
+            <span class="nav-icon">🧠</span><span class="nav-label" style="display:flex;align-items:center;width:100%">Golden Arc AI<span id="ai-nav-dot" style="display:none;width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;margin-left:6px;box-shadow:0 0 5px var(--green)"></span></span>
+          </div>
+        </div>
       </div>
       <div class="sb-foot">
         <div class="user-info">
@@ -846,32 +869,269 @@
               </div>
             </div>
           </div>
-          <div class="card" style="max-width:500px;margin-top:20px">
-            <div class="card-head"><span class="card-title">API Reference</span></div>
+        </div>
+
+        <!-- GOLDEN ARC AI SECTION -->
+        <div class="section" id="section-ai">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:20px;font-weight:700">🧠 Golden Arc AI</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Golden Arc AI — market analysis, signal review, bot risk audit &amp; indicator strategy</div>
+            </div>
+            <button class="btn-outline btn-sm" onclick="App.loadAI()">↻ Refresh</button>
+          </div>
+
+          <!-- Status card -->
+          <div class="card" style="margin-bottom:20px" id="ai-status-card">
+            <div class="card-head"><span class="card-title">Connection Status</span></div>
             <div class="card-body">
-              <div style="font-size:12px;color:var(--muted);line-height:2.2">
-                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/auth/register</code> – Create account</div>
-                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/auth/login</code> – Get JWT</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/accounts</code> – List broker accounts</div>
-                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/accounts</code> – Connect broker account</div>
-                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/webhooks</code> – Create webhook</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/webhooks</code> – List webhooks</div>
-                <div><span style="color:var(--green);width:45px;display:inline-block">POST</span><code>/webhook/:token</code> – TradingView alert (public)</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/tradelog</code> – Trade log</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/tradelog/stats</code> – Daily stats</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/user/orders</code> – Order history</div>
-                <div><span style="color:var(--accent);width:45px;display:inline-block">GET</span><code>/health</code> – Health check</div>
+              <div id="ai-status-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div id="ai-status-dot" style="width:12px;height:12px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
+                  <div id="ai-status-text" style="font-size:14px;font-weight:600">Checking…</div>
+                </div>
+                <div id="ai-status-detail" style="font-size:12px;color:var(--muted)"></div>
               </div>
+              <div id="ai-not-configured" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(240,180,41,.07);border:1px solid rgba(240,180,41,.2);border-radius:var(--radius)">
+                <div style="font-size:13px;font-weight:600;color:var(--yellow);margin-bottom:6px">⚙️ Setup Required</div>
+                <div style="font-size:12px;color:var(--muted);line-height:1.8">
+                  1. Get your API key at <strong style="color:var(--text)">console.anthropic.com/settings/keys</strong><br/>
+                  2. Add to your <code>.env</code> file: <code>ANTHROPIC_API_KEY=sk-ant-api03-…</code><br/>
+                  3. Set <code>CLAUDE_ENABLED=true</code> in <code>.env</code><br/>
+                  4. Restart the server
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Page tabs -->
+          <div class="page-tabs" style="margin-bottom:20px">
+            <button class="page-tab active" id="ai-tab-trading"  onclick="App.aiTab('trading')">🤖 AI Trading</button>
+            <button class="page-tab"        id="ai-tab-analyze"  onclick="App.aiTab('analyze')">📈 Market Analysis</button>
+            <button class="page-tab"        id="ai-tab-signal"   onclick="App.aiTab('signal')">🔍 Signal Review</button>
+            <button class="page-tab"        id="ai-tab-botreview" onclick="App.aiTab('botreview')">🛡️ Bot Risk Audit</button>
+            <button class="page-tab"        id="ai-tab-insight"  onclick="App.aiTab('insight')">💡 Indicator Strategy</button>
+          </div>
+
+          <!-- ── ANALYZE TAB ── -->
+          <div class="tab-panel" id="ai-panel-analyze">
+            <div class="card">
+              <div class="card-head"><span class="card-title">AI Market Analysis</span></div>
+              <div class="card-body">
+                <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px">
+                  <div style="flex:1;max-width:200px">
+                    <label>Symbol</label>
+                    <input type="text" id="ai-sym" placeholder="NQ, ES, MES…" value="NQ" />
+                  </div>
+                  <button class="btn-primary" id="ai-analyze-btn" onclick="App.runMarketAnalysis()">Ask Claude →</button>
+                </div>
+                <div id="ai-analyze-out" style="display:none">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                    <div style="font-size:13px;font-weight:600">Bias:</div>
+                    <div id="ai-bias-badge"></div>
+                    <div style="font-size:12px;color:var(--muted)" id="ai-analyze-time"></div>
+                  </div>
+                  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;font-size:13px;line-height:1.75;margin-bottom:14px" id="ai-summary"></div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+                    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+                      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Key Levels</div>
+                      <div style="font-size:12px" id="ai-levels"></div>
+                    </div>
+                    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px">
+                      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">⚠️ Risk Warnings</div>
+                      <div style="font-size:12px" id="ai-warnings"></div>
+                    </div>
+                  </div>
+                  <div id="ai-ideas-wrap" style="display:none">
+                    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Trade Ideas</div>
+                    <div id="ai-ideas" style="display:flex;flex-direction:column;gap:8px"></div>
+                  </div>
+                </div>
+                <div id="ai-analyze-loading" style="display:none;text-align:center;padding:30px;color:var(--muted)">
+                  <span class="spin" style="width:22px;height:22px;border-width:3px"></span>
+                  <div style="margin-top:10px;font-size:13px">Claude is analysing the market…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── SIGNAL REVIEW TAB ── -->
+          <div class="tab-panel" id="ai-panel-signal">
+            <div class="card">
+              <div class="card-head"><span class="card-title">Manual Signal Review</span></div>
+              <div class="card-body">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Paste a signal JSON from the Order Flow Signal Log, or build one manually, and Claude will tell you if it's worth taking.</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+                  <div class="form-group" style="margin:0"><label>Symbol</label><input type="text" id="ai-sr-sym" placeholder="NQ" /></div>
+                  <div class="form-group" style="margin:0"><label>Direction</label><select id="ai-sr-dir"><option value="BUY">BUY</option><option value="SELL">SELL</option></select></div>
+                  <div class="form-group" style="margin:0"><label>Engine Confidence (%)</label><input type="number" id="ai-sr-conf" value="65" min="0" max="100" /></div>
+                  <div class="form-group" style="margin:0"><label>Linked Bot (optional)</label><select id="ai-sr-bot"><option value="">— None —</option></select></div>
+                </div>
+                <button class="btn-primary" id="ai-sr-btn" onclick="App.runSignalReview()">Review Signal →</button>
+                <div id="ai-sr-out" style="display:none;margin-top:16px"></div>
+                <div id="ai-sr-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)"><span class="spin"></span> <span style="margin-left:8px">Reviewing…</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── BOT RISK AUDIT TAB ── -->
+          <div class="tab-panel" id="ai-panel-botreview">
+            <div class="card">
+              <div class="card-head"><span class="card-title">Bot Risk Configuration Audit</span></div>
+              <div class="card-body">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Claude will review your bot's SL/TP, R:R ratio, circuit breakers, and engine parameters and flag any risk concerns.</div>
+                <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px">
+                  <div style="flex:1;max-width:300px"><label>Select Bot</label><select id="ai-br-bot"><option value="">— Select a bot —</option></select></div>
+                  <button class="btn-primary" id="ai-br-btn" onclick="App.runBotReview()">Audit Bot →</button>
+                </div>
+                <div id="ai-br-out" style="display:none"></div>
+                <div id="ai-br-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)"><span class="spin"></span> <span style="margin-left:8px">Auditing…</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── INDICATOR STRATEGY TAB ── -->
+          <div class="tab-panel" id="ai-panel-insight">
+            <div class="card">
+              <div class="card-head"><span class="card-title">Indicator + Order Flow Strategy Insight</span></div>
+              <div class="card-body">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Claude will analyse all your saved indicators and explain the best way to combine them with the order flow engine — entry rules, filters, and alert template hints.</div>
+                <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px">
+                  <div style="flex:1;max-width:200px"><label>Symbol context (optional)</label><input type="text" id="ai-ins-sym" placeholder="NQ, ES…" /></div>
+                  <button class="btn-primary" id="ai-ins-btn" onclick="App.runIndicatorInsight()">Get Strategy →</button>
+                </div>
+                <div id="ai-ins-out" style="display:none"></div>
+                <div id="ai-ins-loading" style="display:none;text-align:center;padding:20px;color:var(--muted)"><span class="spin"></span> <span style="margin-left:8px">Generating strategy…</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── AI TRADING TAB ── -->
+          <div class="tab-panel active" id="ai-panel-trading">
+
+            <!-- Status bar -->
+            <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div id="ai-t-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
+                <span id="ai-t-status" style="font-size:13px;font-weight:600">Checking…</span>
+              </div>
+              <div id="ai-t-model" style="font-size:11px;color:var(--muted);flex:1"></div>
+              <button class="btn-outline btn-sm" onclick="App.loadAITrading()">↻ Refresh</button>
+            </div>
+
+            <!-- Golden Arc AI quick-deploy banner -->
+            <div style="background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.22);border-radius:10px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:var(--yellow)">⚡ The Golden Arc AI Strategy</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6">Our flagship strategy — Order Flow Engine + Claude AI second-opinion validation. Only fires when trend alignment is strong <em>and</em> AI confirms the setup.</div>
+              </div>
+              <button class="btn-primary" style="flex-shrink:0;font-weight:700" onclick="App.nav('strategies');App.stratBrokerTab('topstepx');setTimeout(()=>App.openDeployModal('golden-arc-ai','topstepx'),100)">⚡ Deploy Now</button>
+            </div>
+
+            <!-- AI-enabled bots -->
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-head">
+                <span class="card-title">🧠 AI-Enabled Bots</span>
+                <span style="font-size:11px;color:var(--muted)">Bots with Claude AI signal filter active</span>
+              </div>
+              <div class="card-body" id="ai-t-bots">
+                <div style="color:var(--muted);font-size:13px;text-align:center;padding:28px">Loading bots…</div>
+              </div>
+            </div>
+
+            <!-- AI signal feed -->
+            <div class="card">
+              <div class="card-head">
+                <span class="card-title">🔍 AI-Validated Signal Feed</span>
+                <button class="btn-outline btn-sm" onclick="App.loadAITrading()">↻</button>
+              </div>
+              <div class="card-body" style="overflow-x:auto" id="ai-t-signals-wrap">
+                <div style="color:var(--muted);font-size:13px;text-align:center;padding:28px">Loading signals…</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- STRATEGIES SECTION -->
+        <div class="section" id="section-strategies">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div>
+              <div style="font-size:20px;font-weight:700">⚡ Strategies</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Select a broker, pick a strategy, and deploy a fully configured auto-trader bot in seconds</div>
+            </div>
+            <button class="btn-outline btn-sm" onclick="App.loadStrategies()">↻ Refresh</button>
+          </div>
+
+          <!-- Broker tabs -->
+          <div class="page-tabs">
+            <button class="page-tab active" id="strat-tab-topstepx" onclick="App.stratBrokerTab('topstepx')">🏆 TopStep</button>
+            <button class="page-tab" id="strat-tab-bitunix"         onclick="App.stratBrokerTab('bitunix')">₿ Bitunix</button>
+            <button class="page-tab" id="strat-tab-lucid"           onclick="App.stratBrokerTab('lucid')">🌊 Lucid</button>
+          </div>
+
+          <!-- TopStep panel -->
+          <div class="tab-panel active" id="strat-panel-topstepx">
+            <div id="strat-cards-topstepx" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+              <div style="color:var(--muted);font-size:13px;padding:40px;text-align:center">Loading strategies…</div>
+            </div>
+          </div>
+
+          <!-- Bitunix panel -->
+          <div class="tab-panel" id="strat-panel-bitunix">
+            <div id="strat-cards-bitunix" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+              <div style="color:var(--muted);font-size:13px;padding:40px;text-align:center">Loading strategies…</div>
+            </div>
+          </div>
+
+          <!-- Lucid panel -->
+          <div class="tab-panel" id="strat-panel-lucid">
+            <div id="strat-cards-lucid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+              <div style="color:var(--muted);font-size:13px;padding:40px;text-align:center">Loading strategies…</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- DEPLOY STRATEGY MODAL -->
+        <div class="modal-ov hidden" id="deploy-modal">
+          <div class="modal" style="max-width:480px">
+            <h3>⚡ Deploy Strategy</h3>
+            <div style="background:rgba(240,180,41,.06);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:12px 16px;margin-bottom:20px">
+              <div style="font-size:14px;font-weight:700;color:var(--yellow)" id="dm-strat-name">—</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:3px" id="dm-strat-tagline">—</div>
+            </div>
+            <input type="hidden" id="dm-strat-id"/>
+            <input type="hidden" id="dm-broker"/>
+            <div class="form-grid">
+              <div class="form-group"><label>Bot Name</label><input type="text" id="dm-bot-name" placeholder="My Strategy Bot"/></div>
+              <div class="form-group"><label>Symbol / Ticker</label><input type="text" id="dm-symbol" placeholder="NQ"/></div>
+              <div class="form-group" style="grid-column:1/-1"><label>Account <span style="color:var(--muted);font-size:10px">(connect one in Accounts page first)</span></label><select id="dm-account-id"><option value="">— Select Account (optional) —</option></select></div>
+              <div class="form-group" style="grid-column:1/-1">
+                <div class="check-row"><input type="checkbox" id="dm-sim" checked/><label for="dm-sim">Start in Simulation Mode <span style="color:var(--muted);font-size:11px">(recommended for testing)</span></label></div>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button class="btn-outline" onclick="App.closeDeployModal()">Cancel</button>
+              <button class="btn-primary" id="dm-deploy-btn" onclick="App.confirmDeploy()">⚡ Deploy Bot</button>
             </div>
           </div>
         </div>
 
-        <!-- ORDER FLOW AI SECTION -->
-        <div class="section" id="section-orderflow">
+        <!-- ORDER FLOW SECTION (content moved to Golden Arc AI tab in Claude AI section) -->
+        <div class="section" id="section-orderflow"></div>
+
+        <!-- GOLDEN ARC AI — ORDER FLOW ENGINE (standalone section) -->
+        <div class="section" id="section-goldenarcai">
           <!-- Header -->
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
             <div>
-              <div style="font-size:20px;font-weight:700;color:var(--text)">Order Flow Auto-Trader</div>
+              <div style="font-size:20px;font-weight:700;color:var(--text)">✦ Golden Arc AI — Order Flow Engine</div>
               <div style="font-size:12px;color:var(--muted);margin-top:4px">
                 AI-driven order flow engine — Delta · Imbalance · Absorption · EMA Trend · ATR Regime · 2:1 R:R
               </div>
@@ -883,13 +1143,22 @@
           </div>
 
           <!-- Strategy explainer banner -->
-          <div style="background:rgba(0,201,122,.06);border:1px solid rgba(0,201,122,.2);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--muted);line-height:1.9">
-            <div style="color:var(--green);font-weight:700;font-size:13px;margin-bottom:6px">⚡ How Order Flow Auto-Trading Works</div>
+          <div style="background:rgba(0,201,122,.06);border:1px solid rgba(0,201,122,.2);border-radius:8px;padding:14px 18px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.9">
+            <div style="color:var(--green);font-weight:700;font-size:13px;margin-bottom:6px">⚡ Strategy 1 — Order Flow Engine</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
               <div><strong style="color:var(--text)">4-metric voting engine</strong> scores every bar across Delta strength, Cumulative Delta trend, Volume Imbalance, and Absorption events. A bonus is added when the EMA slope agrees.</div>
               <div><strong style="color:var(--text)">ATR regime filter</strong> suppresses signals when volatility is too low (choppy, no follow-through) or too high (gapping past your SL). Only <em>normal</em> regime bars trade.</div>
               <div style="margin-top:6px"><strong style="color:var(--text)">2:1 Risk-Reward</strong> — TP is always SL × R:R ratio. At a 40% win rate a 2:1 system breaks even; above 40% is profitable. Edge comes from <em>only trading high-confidence, trend-aligned setups</em>.</div>
               <div style="margin-top:6px"><strong style="color:var(--text)">Circuit breakers</strong> — max daily trades, max daily loss, and consecutive-loss limit automatically halt the bot to protect your account.</div>
+            </div>
+          </div>
+          <div style="background:rgba(245,107,30,.06);border:1px solid rgba(245,107,30,.2);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--muted);line-height:1.9">
+            <div style="color:var(--orange);font-weight:700;font-size:13px;margin-bottom:6px">⬛ Strategy 2 — Top Tick Exhaustion</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
+              <div><strong style="color:var(--text)">Delta divergence at extremes</strong> — fires when price reaches a new N-bar high/low but cumulative delta is moving in the <em>opposite</em> direction. Smart money is absorbing retail flow at the extreme.</div>
+              <div><strong style="color:var(--text)">5-component scoring</strong> — divergence magnitude · absorption event · volume climax spike · delta exhaustion (momentum fading) · delta flip. Higher score = higher confidence reversal.</div>
+              <div style="margin-top:6px"><strong style="color:var(--text)">Mean-reversion edge</strong> — targets the snapback when buying/selling pressure exhausts itself at a price extreme. Pairs well with Golden Arc AI second-opinion filter for extra selectivity.</div>
+              <div style="margin-top:6px"><strong style="color:var(--text)">Same risk controls</strong> — all circuit breakers, session time filter, drawdown guard, and 2:1 R:R enforcement apply equally to Top Tick bots.</div>
             </div>
           </div>
 
@@ -990,8 +1259,64 @@
       <div class="form-group"><label>Min ATR ticks (chop filter)</label><input type="number" id="of-minatr" value="3" min="0" /></div>
       <div class="form-group"><label>Max ATR ticks (gap filter)</label><input type="number" id="of-maxatr" value="120" min="0" /></div>
 
-      <div class="form-group" style="grid-column:1/-1"><label>Data Feed URL (optional — live push)</label><input type="text" id="of-feed" placeholder="https://yourprovider.com/stream" /></div>
       <div class="form-group" style="grid-column:1/-1"><div class="check-row"><input type="checkbox" id="of-sim" checked /><label for="of-sim">Simulation Mode — synthetic ticks, simulated outcomes (safe for testing)</label></div></div>
+
+      <!-- ── Strategy Type ── -->
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);margin:6px 0 10px;padding-top:10px;font-size:11px;font-weight:600;color:var(--orange);letter-spacing:.06em">STRATEGY ENGINE</div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label>Strategy Type</label>
+        <select id="of-strategy" onchange="App.ofStrategyChange()">
+          <option value="orderflow">Order Flow Engine — Multi-factor vote (Delta · Imbalance · Absorption · EMA)</option>
+          <option value="toptick">⬛ Top Tick Exhaustion — Delta divergence at N-bar highs/lows</option>
+        </select>
+      </div>
+
+      <!-- OF-specific params (hidden when Top Tick is selected) -->
+      <div id="of-params-orderflow" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:0 16px">
+        <div style="grid-column:1/-1;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.06em;margin-top:4px">SIGNAL ENGINE PARAMS</div>
+        <div class="form-group"><label>Min Confidence %</label><input type="range" id="of-conf" min="40" max="95" value="65" oninput="document.getElementById('of-conf-val').textContent=this.value" style="width:100%" /><span id="of-conf-val" style="color:var(--accent);font-weight:700">65</span></div>
+        <div class="form-group"><label>Delta Threshold</label><input type="number" id="of-delta" value="150" /></div>
+        <div class="form-group"><label>Imbalance Threshold</label><input type="number" id="of-imb" value="0.62" step="0.01" /></div>
+        <div class="form-group"><label>Cooldown (bars)</label><input type="number" id="of-cool" value="3" min="1" /></div>
+        <div style="grid-column:1/-1;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.06em;margin-top:4px">TREND + ATR REGIME FILTER</div>
+        <div class="form-group"><label>EMA Trend Period</label><input type="number" id="of-trendp" value="10" min="2" /></div>
+        <div class="form-group"><label>ATR Period</label><input type="number" id="of-atrp" value="10" min="2" /></div>
+        <div class="form-group"><label>Min ATR ticks (chop filter)</label><input type="number" id="of-minatr" value="3" min="0" /></div>
+        <div class="form-group"><label>Max ATR ticks (gap filter)</label><input type="number" id="of-maxatr" value="120" min="0" /></div>
+      </div>
+
+      <!-- Top Tick-specific params (hidden when Order Flow is selected) -->
+      <div id="of-params-toptick" style="grid-column:1/-1;display:none;grid-template-columns:1fr 1fr;gap:0 16px">
+        <div style="grid-column:1/-1;padding:10px 12px;background:rgba(245,107,30,.07);border:1px solid rgba(245,107,30,.25);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+          <span style="color:var(--orange);font-weight:700">⬛ How Top Tick Exhaustion works:</span><br/>
+          Fires when price reaches a new N-bar <strong style="color:var(--text)">high</strong> but cumulative delta is <strong style="color:var(--red)">declining</strong> (smart money selling) → SELL.
+          Mirror for lows: new N-bar <strong style="color:var(--text)">low</strong> + rising delta → BUY.
+          Confirmed by absorption events, volume climax spikes, and delta exhaustion (momentum fading).
+        </div>
+        <div class="form-group"><label>Min Confidence %</label><input type="range" id="of-tt-conf" min="40" max="95" value="60" oninput="document.getElementById('of-tt-conf-val').textContent=this.value" style="width:100%" /><span id="of-tt-conf-val" style="color:var(--orange);font-weight:700">60</span></div>
+        <div class="form-group"><label>Price Lookback (bars)</label><input type="number" id="of-tt-lookback" value="10" min="5" title="How many bars back to find the price high/low extreme" /></div>
+        <div class="form-group"><label>Divergence Window (bars)</label><input type="number" id="of-tt-divlookback" value="5" min="2" title="Bars over which cumDelta trend is measured for divergence" /></div>
+        <div class="form-group"><label>Min Delta Divergence</label><input type="number" id="of-tt-mindiv" value="50" min="10" title="Minimum cumDelta shift (opposite to price) to confirm divergence" /></div>
+        <div class="form-group"><label>Exhaustion Ratio</label><input type="number" id="of-tt-exh" value="0.65" step="0.05" min="0.1" max="1" title="Latest bar delta must be ≤ this multiple of rolling avg (momentum fading gate)" /></div>
+        <div class="form-group"><label>Volume Climax Ratio</label><input type="number" id="of-tt-volclimax" value="1.5" step="0.1" min="1" title="Volume spike multiplier — latest vol ≥ N× average triggers climax bonus" /></div>
+        <div class="form-group"><label>Cooldown (bars)</label><input type="number" id="of-tt-cool" value="5" min="1" /></div>
+        <div style="grid-column:1/-1;font-size:11px;font-weight:600;color:var(--orange);letter-spacing:.06em;margin-top:4px">ATR REGIME FILTER</div>
+        <div class="form-group"><label>ATR Period</label><input type="number" id="of-tt-atrp" value="10" min="2" /></div>
+        <div class="form-group"><label>Min ATR ticks</label><input type="number" id="of-tt-minatr" value="3" min="0" /></div>
+        <div class="form-group"><label>Max ATR ticks</label><input type="number" id="of-tt-maxatr" value="120" min="0" /></div>
+      </div>
+
+      <!-- ── Golden Arc AI ── -->
+      <div style="grid-column:1/-1;border-top:1px solid var(--border);margin:6px 0 10px;padding-top:10px;font-size:11px;font-weight:600;color:var(--purple);letter-spacing:.06em">GOLDEN ARC AI FILTER <span id="of-ai-status-label" style="font-size:10px;color:var(--muted);font-weight:400;letter-spacing:0">— loading…</span></div>
+      <div class="form-group" style="grid-column:1/-1">
+        <div class="check-row"><input type="checkbox" id="of-claude" /><label for="of-claude">Enable Golden Arc AI — live order flow reader + signal filter</label></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;padding-left:22px;line-height:1.7">
+          When enabled, AI does two things:<br>
+          <strong style="color:var(--text)">① Signal filter</strong> — before each trade, AI reads the actual bar tape (askVol, bidVol, delta, absorption) and approves or blocks the signal.<br>
+          <strong style="color:var(--text)">② Proactive tape reads</strong> — every 20 bars AI independently analyses the live order flow and logs its directional view, even when no engine signal fired.<br>
+          Requires <code>ANTHROPIC_API_KEY</code> + <code>CLAUDE_ENABLED=true</code> in <code>.env</code>. Adds ~1-2s latency per signal.
+        </div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn-outline" onclick="App.closeBotModal()">Cancel</button>
@@ -1240,6 +1565,16 @@ const API = {
     if (body) opts.body = JSON.stringify(body);
     const res = await fetch(path, opts);
     const data = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      // Token expired or invalid — clear session and send to login
+      API.token = null;
+      localStorage.removeItem('wt_token');
+      localStorage.removeItem('wt_user');
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('auth-page').style.display = '';
+      toast('Your session expired. Please sign in again.', 'error');
+      throw new Error('Session expired');
+    }
     if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
   },
@@ -1385,7 +1720,7 @@ const App = {
   nav(s) {
     document.querySelectorAll('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.s===s));
     document.querySelectorAll('.section').forEach(el=>el.classList.toggle('active',el.id===`section-${s}`));
-    const titles={dashboard:'Dashboard',accounts:'Accounts',webhooks:'Webhooks',indicators:'Indicators',tradingview:'Trade Settings','active-trades':'Active Trades',tradelog:'Trade Log',orders:'Order History',profile:'Profile',orderflow:'Order Flow AI'};
+    const titles={dashboard:'Dashboard',accounts:'Accounts',webhooks:'Webhooks',indicators:'Indicators',tradingview:'Trade Settings','active-trades':'Active Trades',tradelog:'Trade Log',orders:'Order History',profile:'Profile',orderflow:'Order Flow',goldenarcai:'Golden Arc AI',strategies:'Strategies',ai:'Claude AI'};
     document.getElementById('topbar-title').textContent=titles[s]||s;
     // Show broker toggle only on dashboard
     const toggle = document.getElementById('dash-broker-toggle');
@@ -1398,7 +1733,17 @@ const App = {
     if(s==='active-trades')  this.loadActiveTrades();
     if(s==='tradelog')       this.loadTradeLog();
     if(s==='orders')         this.loadOrders();
-    if(s==='orderflow')      this.loadOrderFlow();
+    if(s==='strategies')     this.loadStrategies();
+    if(s==='ai')             { this.loadAI(); this.aiTab('trading'); }
+    if(s==='goldenarcai')    this.loadOrderFlow();
+  },
+
+  navToggle(subId, arrowId) {
+    const sub   = document.getElementById(subId);
+    const arrow = document.getElementById(arrowId);
+    if (!sub) return;
+    const open = sub.classList.toggle('open');
+    if (arrow) arrow.classList.toggle('open', open);
   },
 
   async loadProfile() {
@@ -2174,10 +2519,27 @@ const App = {
         ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 1.4s infinite;margin-right:6px"></span>'
         : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:6px"></span>';
       const rr = b.riskRewardRatio || 2;
+      // Claude proactive tape analysis badge
+      const ca = b.lastClaudeAnalysis;
+      const caDir = ca?.direction || null;
+      const caBadge = ca ? (() => {
+        const col = caDir==='BUY'?'var(--green)':caDir==='SELL'?'var(--red)':'var(--muted)';
+        const ts = ca.timestamp ? new Date(ca.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+        return `<div style="margin-top:8px;padding:8px 10px;background:rgba(124,111,245,.08);border:1px solid rgba(124,111,245,.2);border-radius:6px;font-size:11px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="color:var(--purple);font-weight:700;font-size:10px;letter-spacing:.06em">✦ CLAUDE TAPE READ ${ts}</span>
+            <span style="color:${col};font-weight:700">${caDir} ${ca.confidence}%</span>
+          </div>
+          <div style="color:var(--muted);line-height:1.5;font-size:11px">${ca.reasoning?.slice(0,120) || ''}${(ca.keyAlert)?`<div style="color:var(--yellow);margin-top:3px">⚠ ${ca.keyAlert}</div>`:''}</div>
+        </div>`;
+      })() : '';
       return `<div class="card" style="padding:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="font-weight:700;font-size:14px">${b.name}</div>
-          <div style="font-size:12px">${dot}${running?'<span style="color:var(--green)">Running</span>':'<span style="color:var(--muted)">Stopped</span>'}</div>
+          <div style="font-weight:700;font-size:14px">${b.name}${b.claudeEnabled?'<span style="margin-left:6px;font-size:10px;color:var(--purple);font-weight:700">✦ AI</span>':''}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;${b.strategyType==='toptick'?'background:rgba(245,107,30,.15);color:var(--orange)':'background:rgba(0,212,192,.1);color:var(--accent)'}">${b.strategyType==='toptick'?'⬛ TOP TICK':'⚡ ORDER FLOW'}</span>
+            <div style="font-size:12px">${dot}${running?'<span style="color:var(--green)">Running</span>':'<span style="color:var(--muted)">Stopped</span>'}</div>
+          </div>
         </div>
         <!-- Quick stats row -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;text-align:center">
@@ -2214,6 +2576,7 @@ const App = {
           </div>
           ${s.consecLosses>=2?`<div style="color:var(--red);font-size:11px">⚠ ${s.consecLosses} consecutive losses</div>`:''}
         </div>
+        ${caBadge}
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
           ${running
             ? `<button class="btn-danger btn-sm" onclick="App.stopBot('${b.id}')">■ Stop</button>`
@@ -2261,6 +2624,11 @@ const App = {
     const rr = parseFloat(document.getElementById('of-rr').value) || 2;
     document.getElementById('of-tp').value = Math.round(sl * rr);
   },
+  ofStrategyChange() {
+    const isTT = document.getElementById('of-strategy').value === 'toptick';
+    document.getElementById('of-params-orderflow').style.display = isTT ? 'none'  : 'grid';
+    document.getElementById('of-params-toptick').style.display   = isTT ? 'grid'  : 'none';
+  },
   openBotModal(bot=null) {
     this.ofUpdateTP();
     document.getElementById('of-bot-err').textContent='';
@@ -2270,6 +2638,10 @@ const App = {
     document.getElementById('of-symbol').value=bot?bot.symbol:'';
     document.getElementById('of-qty').value=bot?bot.qty:1;
     document.getElementById('of-broker').value=bot?bot.broker:'';
+    // Strategy type
+    const strat = bot?.strategyType || 'orderflow';
+    document.getElementById('of-strategy').value = strat;
+    // OF params
     document.getElementById('of-conf').value=bot?bot.minConfidence:65;
     document.getElementById('of-conf-val').textContent=bot?bot.minConfidence:65;
     document.getElementById('of-sl').value=bot?bot.slTicks:10;
@@ -2284,8 +2656,22 @@ const App = {
     document.getElementById('of-atrp').value=bot?bot.atrPeriod:10;
     document.getElementById('of-minatr').value=bot?bot.minAtrTicks:3;
     document.getElementById('of-maxatr').value=bot?bot.maxAtrTicks:120;
-    document.getElementById('of-feed').value=bot?bot.dataFeedUrl:'';
+    // Top Tick params
+    document.getElementById('of-tt-conf').value=bot?bot.minConfidence:60;
+    document.getElementById('of-tt-conf-val').textContent=bot?bot.minConfidence:60;
+    document.getElementById('of-tt-lookback').value=bot?.ttLookbackBars??10;
+    document.getElementById('of-tt-divlookback').value=bot?.ttDivLookback??5;
+    document.getElementById('of-tt-mindiv').value=bot?.ttMinDivMagnitude??50;
+    document.getElementById('of-tt-exh').value=bot?.ttExhaustionRatio??0.65;
+    document.getElementById('of-tt-volclimax').value=bot?.ttVolumeClimaxRatio??1.5;
+    document.getElementById('of-tt-cool').value=bot?.cooldownBars??5;
+    document.getElementById('of-tt-atrp').value=bot?.atrPeriod??10;
+    document.getElementById('of-tt-minatr').value=bot?.minAtrTicks??3;
+    document.getElementById('of-tt-maxatr').value=bot?.maxAtrTicks??120;
     document.getElementById('of-sim').checked=bot?!!bot.simulationMode:true;
+    const claudeEl=document.getElementById('of-claude');
+    if(claudeEl) claudeEl.checked=bot?!!bot.claudeEnabled:false;
+    this.ofStrategyChange();
     this.ofBrokerChange();
     this.ofUpdateTP();
     document.getElementById('of-bot-modal').classList.remove('hidden');
@@ -2305,31 +2691,49 @@ const App = {
     } catch(e){ toast('Could not load bot','error'); }
   },
   async saveBot() {
-    const id = document.getElementById('of-bot-id').value;
-    const sl = +document.getElementById('of-sl').value;
-    const rr = +document.getElementById('of-rr').value;
+    const id       = document.getElementById('of-bot-id').value;
+    const sl       = +document.getElementById('of-sl').value;
+    const rr       = +document.getElementById('of-rr').value;
+    const strategy = document.getElementById('of-strategy').value;
+    const isTT     = strategy === 'toptick';
     const payload = {
       name:               document.getElementById('of-name').value.trim(),
       symbol:             document.getElementById('of-symbol').value.trim().toUpperCase(),
       qty:                +document.getElementById('of-qty').value,
       broker:             document.getElementById('of-broker').value,
       accountId:          document.getElementById('of-account').value,
-      minConfidence:      +document.getElementById('of-conf').value,
       slTicks:            sl,
       tpTicks:            Math.round(sl * rr),
       riskRewardRatio:    rr,
       maxDailyLoss:       +document.getElementById('of-maxloss').value,
       maxDailyTrades:     +document.getElementById('of-maxtr').value,
       maxConsecLosses:    +document.getElementById('of-maxcl').value,
+      simulationMode:     document.getElementById('of-sim').checked,
+      claudeEnabled:      document.getElementById('of-claude')?.checked ?? false,
+      strategyType:       strategy,
+      // Shared params
+      minConfidence:      isTT ? +document.getElementById('of-tt-conf').value
+                               : +document.getElementById('of-conf').value,
+      cooldownBars:       isTT ? +document.getElementById('of-tt-cool').value
+                               : +document.getElementById('of-cool').value,
+      atrPeriod:          isTT ? +document.getElementById('of-tt-atrp').value
+                               : +document.getElementById('of-atrp').value,
+      minAtrTicks:        isTT ? +document.getElementById('of-tt-minatr').value
+                               : +document.getElementById('of-minatr').value,
+      maxAtrTicks:        isTT ? +document.getElementById('of-tt-maxatr').value
+                               : +document.getElementById('of-maxatr').value,
+      // Order Flow Engine params (ignored when strategyType=toptick)
       deltaThreshold:     +document.getElementById('of-delta').value,
       imbalanceThreshold: +document.getElementById('of-imb').value,
-      cooldownBars:       +document.getElementById('of-cool').value,
       trendPeriod:        +document.getElementById('of-trendp').value,
-      atrPeriod:          +document.getElementById('of-atrp').value,
-      minAtrTicks:        +document.getElementById('of-minatr').value,
-      maxAtrTicks:        +document.getElementById('of-maxatr').value,
-      dataFeedUrl:        document.getElementById('of-feed').value.trim(),
-      simulationMode:     document.getElementById('of-sim').checked,
+      // Top Tick Exhaustion params (ignored when strategyType=orderflow)
+      ttLookbackBars:     +document.getElementById('of-tt-lookback').value,
+      ttDivLookback:      +document.getElementById('of-tt-divlookback').value,
+      ttMinDivMagnitude:  +document.getElementById('of-tt-mindiv').value,
+      ttExhaustionRatio:  +document.getElementById('of-tt-exh').value,
+      ttVolumeClimaxRatio:+document.getElementById('of-tt-volclimax').value,
+      // TT bots use fewer scoring components so lower confluence gate
+      minConfluenceGate:  isTT ? 2 : 4,
     };
     if(!payload.name||!payload.symbol||!payload.broker){ document.getElementById('of-bot-err').textContent='Name, symbol and broker are required.'; return; }
     try {
@@ -2393,6 +2797,368 @@ const App = {
         <br>
         <em>Tip: The engine's confidence filter, ATR regime check, and EMA trend alignment work together to reach 40-55%+ win rates on liquid futures by only taking the highest-probability setups.</em>
       </div>`;
+  },
+
+  // ── CLAUDE AI ───────────────────────────────────────────────────────────
+  _aiConfigured: false,
+
+  aiTab(t) {
+    ['trading','analyze','signal','botreview','insight'].forEach(id=>{
+      document.getElementById(`ai-tab-${id}`)?.classList.toggle('active',id===t);
+      document.getElementById(`ai-panel-${id}`)?.classList.toggle('active',id===t);
+    });
+    if(t==='trading') this.loadAITrading();
+  },
+
+  async loadAI() {
+    try {
+      const d = await API.get('/ai/status');
+      this._aiConfigured = d.configured;
+      const dot  = document.getElementById('ai-status-dot');
+      const text = document.getElementById('ai-status-text');
+      const detail = document.getElementById('ai-status-detail');
+      const notConf = document.getElementById('ai-not-configured');
+      const navDot = document.getElementById('ai-nav-dot');
+      if(d.configured) {
+        dot.style.background='var(--green)';
+        dot.style.boxShadow='0 0 8px var(--green)';
+        text.textContent='Claude AI Connected';
+        text.style.color='var(--green)';
+        detail.textContent=`Model: ${d.model}  ·  Global enabled: ${d.globalEnabled?'Yes':'No (set CLAUDE_ENABLED=true)'}  ·  Min confidence: ${d.minEngineConfidence}%`;
+        notConf.style.display='none';
+        if(navDot) { navDot.style.display='inline-block'; }
+      } else {
+        dot.style.background='var(--yellow)';
+        text.textContent='API Key Not Configured';
+        text.style.color='var(--yellow)';
+        detail.textContent='Add ANTHROPIC_API_KEY to your .env file to activate Claude AI.';
+        notConf.style.display='';
+        if(navDot) navDot.style.display='none';
+      }
+      // Update AI status label in bot modal
+      const lbl=document.getElementById('of-ai-status-label');
+      if(lbl) lbl.textContent=d.configured?(d.globalEnabled?'— Active':'— key set, CLAUDE_ENABLED=false'):'— not configured';
+      // Populate bot dropdowns
+      const bots = await API.get('/autotrader/bots');
+      const allBots = bots.bots||[];
+      ['ai-sr-bot','ai-br-bot'].forEach(selId=>{
+        const sel=document.getElementById(selId);
+        if(!sel)return;
+        const prev=sel.value;
+        sel.innerHTML='<option value="">— None —</option>';
+        allBots.forEach(b=>{
+          const opt=document.createElement('option');
+          opt.value=b.id; opt.textContent=`${b.name} (${b.symbol})`;
+          sel.appendChild(opt);
+        });
+        if(prev)sel.value=prev;
+      });
+    } catch(err) { console.error('loadAI',err); }
+  },
+
+  async loadAITrading() {
+    const botsEl = document.getElementById('ai-t-bots');
+    const sigsEl = document.getElementById('ai-t-signals-wrap');
+    const dot    = document.getElementById('ai-t-dot');
+    const statEl = document.getElementById('ai-t-status');
+    const modEl  = document.getElementById('ai-t-model');
+    try {
+      const [aiSt, botsRes] = await Promise.all([
+        API.get('/ai/status').catch(()=>null),
+        API.get('/autotrader/bots').catch(()=>({bots:[]})),
+      ]);
+      // Status bar
+      if (aiSt?.configured) {
+        dot.style.cssText='width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--green);box-shadow:0 0 8px var(--green)';
+        statEl.textContent='Claude AI Connected'; statEl.style.color='var(--green)';
+        modEl.textContent=`Model: ${aiSt.model}  ·  Global: ${aiSt.globalEnabled?'Enabled':'Disabled — set CLAUDE_ENABLED=true'}  ·  Min conf: ${aiSt.minEngineConfidence}%`;
+      } else {
+        dot.style.cssText='width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--yellow)';
+        statEl.textContent='API Key Not Configured'; statEl.style.color='var(--yellow)';
+        modEl.textContent='Add ANTHROPIC_API_KEY to .env and set CLAUDE_ENABLED=true to activate';
+      }
+      // AI-enabled bots
+      const allBots = botsRes?.bots || [];
+      const aiBots  = allBots.filter(b=>b.claudeEnabled);
+      if (!aiBots.length) {
+        botsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:28px">No AI-enabled bots yet — deploy a Golden Arc AI strategy or enable Claude on any Order Flow bot.</div>';
+      } else {
+        const sc = s => s==='running'?'var(--green)':s==='stopped'?'var(--muted)':'var(--yellow)';
+        botsEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">${aiBots.map(b=>`
+          <div style="background:var(--bg3);border:1px solid rgba(124,111,245,.3);border-radius:10px;padding:14px 16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div style="font-weight:700;font-size:14px">${b.name||'Unnamed Bot'}</div>
+              <span style="color:${sc(b.status)};font-size:11px;font-weight:700;text-transform:uppercase">${b.status||'stopped'}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">Symbol: <strong style="color:var(--text)">${b.symbol||'—'}</strong></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Broker: <strong style="color:var(--text)">${b.broker||'—'}</strong></div>
+            <span style="background:rgba(124,111,245,.15);color:var(--purple);padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid rgba(124,111,245,.3)">🧠 AI Filter Active</span>
+          </div>`).join('')}</div>`;
+      }
+      // AI-validated signal feed
+      const sigRes = await API.get('/autotrader/signals?limit=40').catch(()=>({signals:[]}));
+      const aiSigs = (sigRes?.signals||[]).filter(s=>s._aiValidation);
+      if (!aiSigs.length) {
+        sigsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:28px">No AI-validated signals yet. Signals appear here once Claude has reviewed them.</div>';
+      } else {
+        const approved = s => s._aiValidation?.approved;
+        sigsEl.innerHTML = `<table class="data-table"><thead><tr><th>Time</th><th>Bot</th><th>Dir</th><th>Conf</th><th>AI Decision</th><th>Reasoning</th></tr></thead><tbody>${
+          aiSigs.slice(0,30).map(s=>`<tr>
+            <td style="white-space:nowrap;font-size:11px">${s.timestamp?new Date(s.timestamp).toLocaleTimeString():'-'}</td>
+            <td>${s.botName||'-'}</td>
+            <td style="color:${s.direction==='BUY'?'var(--green)':'var(--red)'};font-weight:700">${s.direction||'-'}</td>
+            <td>${s.confidence||'-'}%</td>
+            <td><span style="font-weight:700;color:${approved(s)?'var(--green)':'var(--red)'}">${approved(s)?'✓ Approved':'✗ Blocked'}</span></td>
+            <td style="font-size:11px;color:var(--muted);max-width:200px;white-space:normal">${s._aiValidation?.reasoning||'-'}</td>
+          </tr>`).join('')
+        }</tbody></table>`;
+      }
+    } catch(err) { console.error('loadAITrading', err); }
+  },
+
+  async runMarketAnalysis() {
+    const sym = (document.getElementById('ai-sym')?.value||'NQ').trim().toUpperCase();
+    const out    = document.getElementById('ai-analyze-out');
+    const loading= document.getElementById('ai-analyze-loading');
+    const btn    = document.getElementById('ai-analyze-btn');
+    out.style.display='none'; loading.style.display='';
+    btn.disabled=true; btn.textContent='Analysing…';
+    try {
+      const res = await API.post('/ai/analyze',{symbol:sym,bars:[]});
+      const a = res.analysis;
+      // Bias badge
+      const biasColors={'BULLISH':'var(--green)','BEARISH':'var(--red)','NEUTRAL':'var(--muted)','CHOPPY':'var(--yellow)'};
+      document.getElementById('ai-bias-badge').innerHTML=`<span style="background:${biasColors[a.bias]||'var(--muted)'};color:#0a0c12;padding:3px 12px;border-radius:12px;font-size:12px;font-weight:700">${a.bias||'?'}</span>`;
+      document.getElementById('ai-analyze-time').textContent=`Generated ${new Date(res.generatedAt).toLocaleTimeString()}`;
+      document.getElementById('ai-summary').textContent=a.summary||'No summary.';
+      // Key levels
+      const levelsEl=document.getElementById('ai-levels');
+      const sup=(a.keyLevels?.support||[]).map(l=>`<span style="color:var(--green)">${l}</span>`).join(' · ')||'—';
+      const res2=(a.keyLevels?.resistance||[]).map(l=>`<span style="color:var(--red)">${l}</span>`).join(' · ')||'—';
+      levelsEl.innerHTML=`<div style="margin-bottom:5px">Support: ${sup}</div><div>Resistance: ${res2}</div>`;
+      // Warnings
+      const warnEl=document.getElementById('ai-warnings');
+      warnEl.innerHTML=(a.riskWarnings||[]).map(w=>`<div style="color:var(--yellow);margin-bottom:4px">⚠ ${w}</div>`).join('')||'<span style="color:var(--muted)">None flagged.</span>';
+      // Trade ideas
+      const ideas=a.tradeIdeas||[];
+      const ideasWrap=document.getElementById('ai-ideas-wrap');
+      const ideasEl=document.getElementById('ai-ideas');
+      if(ideas.length) {
+        ideasWrap.style.display='';
+        ideasEl.innerHTML=ideas.map(idea=>{
+          const c=idea.direction==='BUY'?'var(--green)':'var(--red)';
+          return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:start">
+            <span style="background:${c};color:#0a0c12;font-weight:700;font-size:12px;padding:2px 10px;border-radius:10px;grid-row:1/3">${idea.direction}</span>
+            <div style="font-size:12px"><strong>Entry:</strong> ${idea.entry}  <strong style="margin-left:8px">Target:</strong> <span style="color:var(--green)">${idea.target}</span>  <strong style="margin-left:8px">Stop:</strong> <span style="color:var(--red)">${idea.stop}</span></div>
+            <div style="font-size:12px;color:var(--muted)">${idea.rationale}</div>
+          </div>`;
+        }).join('');
+      } else ideasWrap.style.display='none';
+      out.style.display='';
+    } catch(err){ toast('Analysis failed: '+err.message,'error'); }
+    finally{ loading.style.display='none'; btn.disabled=false; btn.textContent='Ask Claude →'; }
+  },
+
+  async runSignalReview() {
+    const sym  = (document.getElementById('ai-sr-sym')?.value||'NQ').trim().toUpperCase();
+    const dir  = document.getElementById('ai-sr-dir')?.value||'BUY';
+    const conf = parseInt(document.getElementById('ai-sr-conf')?.value)||65;
+    const botId= document.getElementById('ai-sr-bot')?.value||'';
+    const signal = { symbol:sym, signal:dir, confidence:conf, reasons:[], metrics:{} };
+    const out    = document.getElementById('ai-sr-out');
+    const loading= document.getElementById('ai-sr-loading');
+    const btn    = document.getElementById('ai-sr-btn');
+    out.style.display='none'; loading.style.display='';
+    btn.disabled=true; btn.textContent='Reviewing…';
+    try {
+      const res = await API.post('/ai/signal-review',{signal,botId:botId||undefined});
+      const r = res.review;
+      const appColor = r.approved?'var(--green)':'var(--red)';
+      out.innerHTML=`
+        <div style="background:var(--bg3);border:1px solid ${appColor};border-radius:var(--radius);padding:16px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+            <div style="font-size:22px">${r.approved?'✅':'🚫'}</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:${appColor}">${r.approved?'Signal Approved':'Signal Rejected'}</div>
+              <div style="font-size:12px;color:var(--muted)">AI Direction: <strong style="color:${r.aiDirection==='BUY'?'var(--green)':'var(--red)'}">${r.aiDirection}</strong>  ·  AI Confidence: <strong style="color:var(--accent)">${r.aiConfidence}%</strong></div>
+            </div>
+          </div>
+          <div style="font-size:13px;line-height:1.7;color:var(--text);margin-bottom:${r.suggestedAdjustments?.skipReason?'12px':'0'}">${r.reasoning||'No reasoning provided.'}</div>
+          ${r.suggestedAdjustments?.skipReason?`<div style="font-size:12px;color:var(--yellow);padding:8px 12px;background:rgba(240,180,41,.07);border-radius:6px;margin-top:8px">Skip reason: ${r.suggestedAdjustments.skipReason}</div>`:''}
+          ${(r.suggestedAdjustments?.slTicks||r.suggestedAdjustments?.tpTicks)?`<div style="font-size:12px;color:var(--muted);margin-top:8px">Suggested: SL ${r.suggestedAdjustments.slTicks||'—'}t  TP ${r.suggestedAdjustments.tpTicks||'—'}t</div>`:''}
+        </div>`;
+      out.style.display='';
+    } catch(err){ toast('Review failed: '+err.message,'error'); }
+    finally{ loading.style.display='none'; btn.disabled=false; btn.textContent='Review Signal →'; }
+  },
+
+  async runBotReview() {
+    const botId = document.getElementById('ai-br-bot')?.value;
+    if(!botId){ toast('Select a bot first.','error'); return; }
+    const out    = document.getElementById('ai-br-out');
+    const loading= document.getElementById('ai-br-loading');
+    const btn    = document.getElementById('ai-br-btn');
+    out.style.display='none'; loading.style.display='';
+    btn.disabled=true; btn.textContent='Auditing…';
+    try {
+      const res = await API.post(`/ai/bot-review/${botId}`,{});
+      const r = res.review;
+      const ratingColors={'LOW':'var(--green)','MEDIUM':'var(--yellow)','HIGH':'var(--orange)','CRITICAL':'var(--red)'};
+      const ratingColor=ratingColors[r.riskRating]||'var(--muted)';
+      out.innerHTML=`
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span style="background:${ratingColor};color:#0a0c12;font-size:12px;font-weight:700;padding:3px 12px;border-radius:10px">${r.riskRating||'?'} RISK</span>
+            <span style="font-size:13px;color:var(--text)">Bot: <strong>${res.bot?.name||'Unknown'}</strong></span>
+          </div>
+          <div style="font-size:13px;line-height:1.7;margin-bottom:12px">${r.assessment||'No assessment.'}</div>
+          ${(r.warnings||[]).length?`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Warnings</div>${r.warnings.map(w=>`<div style="font-size:12px;color:var(--yellow);padding:5px 0;border-bottom:1px solid var(--border)">⚠ ${w}</div>`).join('')}</div>`:''}
+          ${(r.suggestions||[]).length?`<div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:7px">Suggestions</div>${r.suggestions.map(s=>`<div style="font-size:12px;color:var(--accent);padding:5px 0;border-bottom:1px solid var(--border)">💡 ${s}</div>`).join('')}</div>`:''}
+        </div>`;
+      out.style.display='';
+    } catch(err){ toast('Audit failed: '+err.message,'error'); }
+    finally{ loading.style.display='none'; btn.disabled=false; btn.textContent='Audit Bot →'; }
+  },
+
+  async runIndicatorInsight() {
+    const sym = (document.getElementById('ai-ins-sym')?.value||'').trim();
+    const out    = document.getElementById('ai-ins-out');
+    const loading= document.getElementById('ai-ins-loading');
+    const btn    = document.getElementById('ai-ins-btn');
+    if(!this.indicators||!this.indicators.length){ toast('No indicators saved. Add indicators first.','error'); return; }
+    out.style.display='none'; loading.style.display='';
+    btn.disabled=true; btn.textContent='Generating…';
+    try {
+      const res = await API.post('/ai/indicator-insight',{symbol:sym});
+      const i = res.insight;
+      out.innerHTML=`
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px">
+          <div style="font-size:13px;line-height:1.75;margin-bottom:14px;color:var(--text)">${i.strategy||'No strategy returned.'}</div>
+          ${(i.entryRules||[]).length?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Entry Rules</div>${i.entryRules.map((r,n)=>`<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--accent);font-weight:700">${n+1}.</span> ${r}</div>`).join('')}</div>`:''}
+          ${(i.filterRules||[]).length?`<div style="margin-bottom:14px"><div style="font-size:11px;color:var(--yellow);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Filter Rules</div>${i.filterRules.map(r=>`<div style="font-size:12px;color:var(--text);padding:5px 0;border-bottom:1px solid var(--border)">🔍 ${r}</div>`).join('')}</div>`:''}
+          ${(i.alertTemplateHints||[]).length?`<div><div style="font-size:11px;color:var(--purple);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Alert Template Hints</div>${i.alertTemplateHints.map(r=>`<div style="font-size:12px;color:var(--muted);padding:5px 0;border-bottom:1px solid var(--border)">📋 ${r}</div>`).join('')}</div>`:''}
+        </div>`;
+      out.style.display='';
+    } catch(err){ toast('Insight failed: '+err.message,'error'); }
+    finally{ loading.style.display='none'; btn.disabled=false; btn.textContent='Get Strategy →'; }
+  },
+
+  // ── Strategies ─────────────────────────────────────────────────────────────
+  _stratData: null,
+
+  async loadStrategies() {
+    if (!this._stratData) {
+      try {
+        const d = await API.get('/strategies');
+        this._stratData = d.strategies;
+      } catch(e) {
+        toast('Failed to load strategies: ' + e.message, 'error');
+        return;
+      }
+    }
+    const badgeColorMap = {
+      purple:'var(--purple)', cyan:'var(--cyan)', gold:'var(--yellow)',
+      green:'var(--green)', orange:'var(--orange)', red:'var(--red)',
+    };
+    const riskColor = r => r==='High'?'var(--red)':r==='Medium'?'var(--yellow)':'var(--green)';
+    const brokerLabel = b => b==='topstepx'?'TopStep':b==='bitunix'?'Bitunix':'Lucid';
+
+    ['topstepx','bitunix','lucid'].forEach(broker => {
+      const container = document.getElementById(`strat-cards-${broker}`);
+      if (!container) return;
+      const strats = this._stratData.filter(s => s.brokers.includes(broker));
+      if (!strats.length) { container.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:40px;text-align:center">No strategies available.</div>'; return; }
+      const flagship = s => s.id === 'golden-arc-ai';
+      container.innerHTML = strats.map(s => `
+        <div style="background:var(--bg2);border:1px solid ${flagship(s)?'rgba(240,180,41,.4)':'var(--border)'};border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden;${flagship(s)?'box-shadow:0 0 28px rgba(240,180,41,.08)':''}">
+          ${flagship(s)?'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--yellow),var(--accent))"></div>':''}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <div>
+              <div style="font-size:15px;font-weight:700;margin-bottom:4px">${s.name}</div>
+              <div style="font-size:12px;color:var(--muted)">${s.tagline}</div>
+            </div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;flex-shrink:0">
+              <span style="background:rgba(0,0,0,.3);color:${badgeColorMap[s.badgeColor]||'var(--muted)'};padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid ${badgeColorMap[s.badgeColor]||'var(--border)'}33">${s.badge}</span>
+              ${s.params.claudeEnabled?'<span style="background:rgba(124,111,245,.15);color:var(--purple);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid rgba(124,111,245,.3)">\ud83e\udde0 AI</span>':''}
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.65">${s.description}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">R/R Ratio</div>
+              <div style="font-size:15px;font-weight:700;color:var(--green);margin-top:3px">${s.params.riskRewardRatio}:1</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Daily</div>
+              <div style="font-size:15px;font-weight:700;margin-top:3px">${s.params.maxDailyTrades} trades</div>
+            </div>
+            <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;text-align:center">
+              <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Risk</div>
+              <div style="font-size:15px;font-weight:700;margin-top:3px;color:${riskColor(s.riskLevel)}">${s.riskLevel}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span style="border:1px solid var(--border);color:var(--muted);padding:2px 10px;border-radius:20px;font-size:11px">${s.style}</span>
+            <span style="border:1px solid var(--border);color:var(--muted);padding:2px 10px;border-radius:20px;font-size:11px">⏱ ${s.timeframe}</span>
+            <span style="border:1px solid var(--border);color:var(--muted);padding:2px 10px;border-radius:20px;font-size:11px">SL ${s.params.slTicks}t / TP ${s.params.tpTicks}t</span>
+          </div>
+          <button class="btn-primary" style="width:100%;font-weight:700" onclick="App.openDeployModal('${s.id}','${broker}')">⚡ Deploy to ${brokerLabel(broker)}</button>
+        </div>
+      `).join('');
+    });
+  },
+
+  stratBrokerTab(broker) {
+    ['topstepx','bitunix','lucid'].forEach(b => {
+      document.getElementById(`strat-tab-${b}`)?.classList.toggle('active', b===broker);
+      document.getElementById(`strat-panel-${b}`)?.classList.toggle('active', b===broker);
+    });
+  },
+
+  openDeployModal(stratId, broker) {
+    if (!this._stratData) return;
+    const s = this._stratData.find(x => x.id === stratId);
+    if (!s) return;
+    document.getElementById('dm-strat-id').value    = stratId;
+    document.getElementById('dm-broker').value      = broker;
+    document.getElementById('dm-strat-name').textContent    = s.name;
+    document.getElementById('dm-strat-tagline').textContent = s.tagline;
+    document.getElementById('dm-bot-name').value    = `${s.name} — ${s.defaultSymbols[broker]||''}`;
+    document.getElementById('dm-symbol').value      = s.defaultSymbols[broker] || '';
+    const dmAcctSel = document.getElementById('dm-account-id');
+    const dmAccts = (this.accounts||[]).filter(a => !broker || a.broker === broker);
+    dmAcctSel.innerHTML = '<option value="">— Select Account (optional) —</option>' + dmAccts.map(a=>`<option value="${a.id}">${a.label}</option>`).join('');
+    document.getElementById('dm-sim').checked       = true;
+    document.getElementById('deploy-modal').classList.remove('hidden');
+  },
+
+  closeDeployModal() {
+    document.getElementById('deploy-modal').classList.add('hidden');
+  },
+
+  async confirmDeploy() {
+    const btn = document.getElementById('dm-deploy-btn');
+    btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Deploying…';
+    try {
+      const symRaw = (document.getElementById('dm-symbol').value||'').trim().toUpperCase();
+      if (!symRaw) { toast('Symbol is required', 'error'); return; }
+      const payload = {
+        strategyId:    document.getElementById('dm-strat-id').value,
+        broker:        document.getElementById('dm-broker').value,
+        botName:       document.getElementById('dm-bot-name').value.trim(),
+        symbol:        symRaw,
+        accountId:     document.getElementById('dm-account-id').value || null,
+        simulationMode: document.getElementById('dm-sim').checked,
+      };
+      await API.post('/strategies/deploy', payload);
+      this.closeDeployModal();
+      toast('Bot deployed! Visit Order Flow AI to start it.', 'success');
+      this._stratData = null; // clear cache so next open re-fetches
+    } catch(e) {
+      toast('Deploy failed: ' + e.message, 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = '⚡ Deploy Bot';
+    }
   },
 
   async copyText(text,btn) {

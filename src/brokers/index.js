@@ -5,18 +5,21 @@
  */
 
 const topstepx = require('./topstepx');
-const lucid = require('./lucid');
+const lucid    = require('./lucid');
+const bitunix  = require('./bitunix');
 const logger = require('../utils/logger');
 
 const BROKERS = {
   topstepx,
+  topstep: topstepx,   // alias – both names route to the TopstepX adapter
   lucid,
+  bitunix,
 };
 
 /**
  * Execute an order through the correct broker.
  *
- * @param {string} brokerName   - 'topstep' | 'lucid'
+ * @param {string} brokerName   - 'topstepx' | 'topstep' | 'lucid' | 'bitunix'
  * @param {object} order        - normalised order object from alertParser
  * @param {object} brokerConfig - per-user broker credentials stored in webhook
  * @returns {object}            - broker response

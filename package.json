@@ -9,6 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@microsoft/signalr": "^10.0.0",
     "axios": "^1.6.7",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
@@ -17,10 +19,11 @@
     "express-rate-limit": "^7.2.0",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
+    "lowdb": "^1.0.0",
     "morgan": "^1.10.0",
     "uuid": "^9.0.0",
     "winston": "^3.11.0",
-    "lowdb": "^1.0.0"
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.3"

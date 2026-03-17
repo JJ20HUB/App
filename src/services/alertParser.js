@@ -87,8 +87,9 @@ function parseAlert(body) {
     throw new Error('Alert missing "ticker" or "symbol" field.');
   }
 
-  const qty = parseFloat(parsed.qty || parsed.contracts || parsed.size || 1);
-  if (isNaN(qty) || qty <= 0) {
+  const rawQty = parsed.qty ?? parsed.contracts ?? parsed.size ?? null;
+  const qty = rawQty !== null ? parseFloat(rawQty) : null;
+  if (qty !== null && (isNaN(qty) || qty <= 0)) {
     throw new Error(`Invalid quantity: "${parsed.qty}".`);
   }
 
@@ -101,7 +102,7 @@ function parseAlert(body) {
   const comment   = parsed.comment    || parsed.strategy || '';
   const signal    = parsed.signal     || parsed.indicator || '';
 
-  const order = { action, ticker, qty, price, orderType, comment, signal, sl, tp, slTicks, tpTicks };
+  const order = { action, ticker, qty, price, orderType, comment, signal, sl, tp, slTicks, tpTicks, _qtyFromAlert: qty !== null };
   logger.debug(`[alertParser] Parsed alert → ${JSON.stringify(order)}`);
   return order;
 }
